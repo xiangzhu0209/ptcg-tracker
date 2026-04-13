@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PTCG 數位收藏夾</title>
+    <title>PTCG Pro 收藏管家</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -12,193 +12,282 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-        :root { --up: #eb4034; --down: #1fa139; --primary: #007bff; }
-        body { font-family: -apple-system, sans-serif; background: #f4f7f9; margin: 0; padding-bottom: 80px; }
-        .header { background: #333; color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; font-weight: bold; }
-        .add-form { background: white; padding: 20px; display: none; border-bottom: 2px solid var(--primary); }
-        .input-group { margin-bottom: 12px; }
-        .input-group label { display: block; font-size: 13px; color: #666; margin-bottom: 4px; }
-        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        .img-upload-box { width: 100%; height: 180px; border: 2px dashed #ccc; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #fafafa; cursor: pointer; }
-        .img-upload-box img { width: 100%; height: 100%; object-fit: contain; }
-        .card-list { padding: 12px; }
-        .card-item { background: white; border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .card-info { display: flex; gap: 12px; align-items: flex-start; }
-        .card-img { width: 80px; height: 110px; object-fit: cover; border-radius: 8px; background: #eee; }
-        .card-text { flex: 1; }
-        .price-row { display: flex; justify-content: space-between; margin-top: 10px; align-items: flex-end; }
-        .badge { font-size: 11px; padding: 2px 6px; border-radius: 4px; background: #eee; }
-        .sold { background: #666; color: white; }
-        .up-text { color: var(--up); font-weight: bold; }
-        .down-text { color: var(--down); font-weight: bold; }
-        .chart-box { height: 200px; margin-top: 15px; display: none; border-top: 1px solid #f0f0f0; padding-top: 10px; }
-        .fab { position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: white; width: 60px; height: 60px; border-radius: 30px; border: none; font-size: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        :root { --up: #eb4034; --down: #1fa139; --primary: #007bff; --bg: #f2f2f7; --card: #ffffff; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); margin: 0; color: #1c1c1e; }
+        
+        /* Header & Search */
+        .header { background: var(--card); padding: 20px 15px 10px; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 10px rgba(0,0,0,0.05); }
+        .title { font-size: 24px; font-weight: 800; margin-bottom: 15px; }
+        .search-bar { background: #e3e3e6; border-radius: 10px; padding: 10px; display: flex; align-items: center; margin-bottom: 10px; }
+        .search-bar input { background: transparent; border: none; width: 100%; outline: none; font-size: 16px; margin-left: 8px; }
+        
+        .filter-tabs { display: flex; gap: 8px; margin-bottom: 5px; overflow-x: auto; padding-bottom: 5px; }
+        .tab { padding: 6px 15px; border-radius: 20px; background: #ddd; font-size: 13px; white-space: nowrap; cursor: pointer; }
+        .tab.active { background: var(--primary); color: white; }
+
+        /* Card Item */
+        .card-list { padding: 15px; }
+        .card-item { background: var(--card); border-radius: 18px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .card-main { display: flex; gap: 15px; }
+        .card-img { width: 90px; height: 125px; object-fit: cover; border-radius: 10px; background: #e5e5ea; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .card-details { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        
+        .card-name { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+        .card-sn { font-size: 12px; color: #8e8e93; }
+        .price-badge { font-size: 14px; font-weight: bold; margin-top: 5px; }
+        
+        /* 功能按鈕區 */
+        .action-row { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 12px; border-top: 1px solid #f2f2f7; }
+        .btn-update { background: #f2f2f7; border: none; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--primary); }
+        
+        /* 表單彈出層 */
+        .form-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:flex-end; }
+        .form-content { background:white; width:100%; border-radius:20px 20px 0 0; padding:20px; box-sizing:border-box; max-height: 90%; overflow-y: auto; }
+        .input-item { margin-bottom: 15px; }
+        .input-item label { display:block; font-size:13px; color:#8e8e93; margin-bottom:5px; }
+        .input-item input, .input-item select { width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:16px; box-sizing:border-box; }
+        
+        .img-preview-box { width: 100%; height: 200px; border: 2px dashed #ddd; border-radius: 15px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f9f9f9; }
+        .img-preview-box img { width: 100%; height: 100%; object-fit: contain; }
+
+        .fab { position: fixed; bottom: 30px; right: 20px; background: var(--primary); color: white; width: 56px; height: 56px; border-radius: 28px; border: none; font-size: 30px; box-shadow: 0 4px 12px rgba(0,123,255,0.4); z-index: 999; }
+        .chart-container { display: none; margin-top: 10px; height: 180px; }
     </style>
 </head>
 <body>
 
-<div class="header">PTCG 數位收藏夾</div>
-
-<div class="add-form" id="addForm">
-    <div class="input-group">
-        <label>卡牌照片 (點擊上傳)</label>
-        <div class="img-upload-box" onclick="document.getElementById('fileInput').click()">
-            <img id="previewImg" style="display:none;">
-            <span id="plusSign">+ 拍攝或選取照片</span>
-        </div>
-        <input type="file" id="fileInput" accept="image/*" style="display:none;">
+<div class="header">
+    <div class="title">我的 PTCG 收藏</div>
+    <div class="search-bar">
+        <span>🔍</span>
+        <input type="text" id="searchInput" placeholder="搜尋序號或名稱..." oninput="renderList()">
     </div>
-    <div class="input-group"><label>序號</label><input type="text" id="sn" placeholder="例如: 001"></div>
-    <div class="input-group"><label>名稱</label><input type="text" id="name" placeholder="例如: 噴火龍"></div>
-    <div class="input-group"><label>認證序號</label><input type="text" id="certId" placeholder="例如: PSA-10"></div>
-    <div class="input-group"><label>購入管道</label><input type="text" id="source" placeholder="例如: 官網"></div>
-    <div class="input-group"><label>買進價</label><input type="number" id="buyPrice"></div>
-    <div class="input-group"><label>目前行情</label><input type="number" id="currentPrice"></div>
-    <div class="input-group"><label>備註</label><textarea id="memo" rows="2"></textarea></div>
-    <div class="input-group">
-        <label>狀態</label>
-        <select id="isSold"><option value="false">持倉中</option><option value="true">已賣出</option></select>
+    <div class="filter-tabs">
+        <div class="tab active" onclick="filterStatus('all', this)">全部</div>
+        <div class="tab" onclick="filterStatus('active', this)">持倉中</div>
+        <div class="tab" onclick="filterStatus('sold', this)">已賣出</div>
     </div>
-    <button onclick="saveData()" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:10px; font-weight:bold;">儲存卡牌</button>
 </div>
 
-<div class="card-list" id="cardList">載入資料中...</div>
-<button class="fab" onclick="toggleForm()">＋</button>
+<div id="cardList" class="card-list"></div>
+
+<button class="fab" onclick="showAddForm()">＋</button>
+
+<div id="formOverlay" class="form-overlay" onclick="if(event.target==this) hideForm()">
+    <div class="form-content">
+        <h3 id="formTitle">新增卡牌</h3>
+        <div class="input-item">
+            <div class="img-preview-box" onclick="document.getElementById('fileInput').click()">
+                <img id="previewImg" style="display:none;">
+                <div id="uploadPlaceholder">📸 點擊拍照或選取照片</div>
+            </div>
+            <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="handleFile(this)">
+        </div>
+        <div class="input-item"><label>序號 (必要)</label><input type="text" id="sn"></div>
+        <div class="input-item"><label>名稱 (必要)</label><input type="text" id="name"></div>
+        <div class="input-item"><label>買進價格</label><input type="number" id="buyPrice"></div>
+        <div class="input-item"><label>目前時價</label><input type="number" id="currentPrice"></div>
+        <div class="input-item">
+            <label>狀態</label>
+            <select id="isSold"><option value="false">持倉中</option><option value="true">已賣出</option></select>
+        </div>
+        <button onclick="saveData()" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:12px; font-weight:bold; font-size:16px;">確認儲存</button>
+        <button onclick="hideForm()" style="width:100%; padding:12px; background:none; border:none; color:#8e8e93; margin-top:5px;">取消</button>
+    </div>
+</div>
 
 <script>
-    // 這裡已填入你提供的 Firebase 配置
+    // 請填入你的 Firebase 配置
     const firebaseConfig = {
       apiKey: "AIzaSyCa_vS9uZ1niPmXQjlmWT1q6h16S_btALU",
       authDomain: "ptcg-1645a.firebaseapp.com",
-      databaseURL: "https://ptcg-1645a-default-rtdb.firebaseio.com",
       projectId: "ptcg-1645a",
-      storageBucket: "ptcg-1645a.firebasestorage.app",
+      storageBucket: "ptcg-1645a.firebasestorage.app", // 確認這裡是否為 .appspot.com
       messagingSenderId: "736309614311",
-      appId: "1:736309614311:web:1352e643e04be0a35d7442",
-      measurementId: "G-TP4D7ZRLLZ"
+      appId: "1:736309614311:web:1352e643e04be0a35d7442"
     };
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const storage = firebase.storage();
+    
+    let allCards = [];
+    let currentFilter = 'all';
     let currentChart = null;
 
-    document.getElementById('fileInput').onchange = e => {
-        const file = e.target.files[0];
+    // 處理圖片預覽與簡易壓縮
+    function handleFile(input) {
+        const file = input.files[0];
         if (file) {
             document.getElementById('previewImg').src = URL.createObjectURL(file);
             document.getElementById('previewImg').style.display = 'block';
-            document.getElementById('plusSign').style.display = 'none';
+            document.getElementById('uploadPlaceholder').style.display = 'none';
         }
-    };
-
-    function toggleForm() {
-        const f = document.getElementById('addForm');
-        f.style.display = f.style.display === 'block' ? 'none' : 'block';
     }
 
+    function showAddForm() {
+        document.getElementById('formTitle').innerText = "新增收藏";
+        document.getElementById('sn').value = "";
+        document.getElementById('name').value = "";
+        document.getElementById('formOverlay').style.display = 'flex';
+    }
+
+    function hideForm() {
+        document.getElementById('formOverlay').style.display = 'none';
+    }
+
+    function filterStatus(status, el) {
+        currentFilter = status;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        renderList();
+    }
+
+    // 儲存邏輯
     async function saveData() {
         const sn = document.getElementById('sn').value;
         const name = document.getElementById('name').value;
         const buyPrice = parseFloat(document.getElementById('buyPrice').value) || 0;
         const currentPrice = parseFloat(document.getElementById('currentPrice').value) || 0;
+        const isSold = document.getElementById('isSold').value === 'true';
         const file = document.getElementById('fileInput').files[0];
 
-        if (!sn || !name) return Swal.fire("錯誤", "序號與名稱必填", "error");
+        if (!sn || !name) return Swal.fire("提醒", "序號與名稱是必填的喔！", "warning");
 
-        Swal.fire({ title: '上傳中...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        Swal.fire({ title: '處理中...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
         try {
             let imageUrl = "";
             if (file) {
-                const ref = storage.ref(`cards/${sn}_${Date.now()}`);
+                // 上傳照片
+                const ref = storage.ref(`ptcg/${sn}_${Date.now()}`);
                 await ref.put(file);
                 imageUrl = await ref.getDownloadURL();
             }
 
-            const cardRef = db.collection("cards").doc(sn);
-            const doc = await cardRef.get();
-            let history = [];
-            if(doc.exists) history = doc.data().history || [];
+            const ref = db.collection("cards").doc(sn);
+            const doc = await ref.get();
+            let history = doc.exists ? (doc.data().history || []) : [];
             
-            history.push({
-                date: new Date().toLocaleDateString(),
-                price: currentPrice
-            });
+            // 只有當價格變動時才加入歷史紀錄
+            if (history.length === 0 || history[history.length-1].price !== currentPrice) {
+                history.push({ date: new Date().toLocaleDateString(), price: currentPrice });
+            }
 
-            await cardRef.set({
-                sn, name, buyPrice, currentPrice,
-                certId: document.getElementById('certId').value,
-                source: document.getElementById('source').value,
-                memo: document.getElementById('memo').value,
-                isSold: document.getElementById('isSold').value === 'true',
+            await ref.set({
+                sn, name, buyPrice, currentPrice, isSold, history,
                 imageUrl: imageUrl || (doc.exists ? doc.data().imageUrl : ""),
-                history: history,
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             }, { merge: true });
 
-            Swal.fire("成功", "資料已更新", "success");
-            toggleForm();
-            document.getElementById('previewImg').style.display = 'none';
-            document.getElementById('plusSign').style.display = 'block';
+            Swal.fire("完成", "資料已成功同步", "success");
+            hideForm();
         } catch (e) {
-            Swal.fire("儲存失敗", "請確保 Firestore 與 Storage 已開啟測試模式規則", "error");
-            console.error(e);
+            Swal.fire("儲存失敗", "請確認 Storage 規則是否已發布: " + e.message, "error");
         }
     }
 
+    // 快捷更新行情
+    async function quickUpdate(sn, currentP) {
+        const { value: newPrice } = await Swal.fire({
+            title: '更新當日行情',
+            input: 'number',
+            inputValue: currentP,
+            inputLabel: '請輸入新的市場時價',
+            showCancelButton: true
+        });
+
+        if (newPrice) {
+            const ref = db.collection("cards").doc(sn);
+            const doc = await ref.get();
+            let history = doc.data().history || [];
+            history.push({ date: new Date().toLocaleDateString(), price: parseFloat(newPrice) });
+            
+            await ref.update({
+                currentPrice: parseFloat(newPrice),
+                history: history,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+    }
+
+    // 監聽資料庫
     db.collection("cards").orderBy("updatedAt", "desc").onSnapshot(snap => {
+        allCards = [];
+        snap.forEach(doc => allCards.push(doc.data()));
+        renderList();
+    });
+
+    function renderList() {
+        const search = document.getElementById('searchInput').value.toLowerCase();
         const container = document.getElementById('cardList');
         container.innerHTML = "";
-        snap.forEach(doc => {
-            const d = doc.data();
-            const diff = d.currentPrice - d.buyPrice;
-            const percent = d.buyPrice ? ((diff / d.buyPrice) * 100).toFixed(1) : 0;
-            
+
+        const filtered = allCards.filter(c => {
+            const matchSearch = c.name.toLowerCase().includes(search) || c.sn.toLowerCase().includes(search);
+            const matchStatus = currentFilter === 'all' || 
+                               (currentFilter === 'active' && !c.isSold) || 
+                               (currentFilter === 'sold' && c.isSold);
+            return matchSearch && matchStatus;
+        });
+
+        filtered.forEach(c => {
+            const diff = c.currentPrice - c.buyPrice;
+            const percent = c.buyPrice ? ((diff / c.buyPrice) * 100).toFixed(1) : 0;
+            const colorClass = diff >= 0 ? 'up-text' : 'down-text';
+
             container.innerHTML += `
-                <div class="card-item" onclick="showChart('${doc.id}')">
-                    <div class="card-info">
-                        <img class="card-img" src="${d.imageUrl || 'https://via.placeholder.com/80x110?text=No+Img'}">
-                        <div class="card-text">
-                            <div style="font-size:12px; color:#888;">#${d.sn} | ${d.source || '未知來源'}</div>
-                            <div style="font-weight:bold; font-size:18px;">${d.name}</div>
-                            <div class="badge ${d.isSold ? 'sold' : ''}">${d.isSold ? '已賣出' : '持倉中'}</div>
-                        </div>
-                    </div>
-                    <div class="price-row">
-                        <div><small>買進 $${d.buyPrice}</small><br><small>證號: ${d.certId || '-'}</small></div>
-                        <div style="text-align:right">
-                            <div class="${diff >= 0 ? 'up-text' : 'down-text'}">
-                                $${d.currentPrice} (${diff >= 0 ? '+' : ''}${percent}%)
+                <div class="card-item">
+                    <div class="card-main" onclick="toggleChart('${c.sn}')">
+                        <img class="card-img" src="${c.imageUrl || 'https://via.placeholder.com/90x125?text=無圖片'}">
+                        <div class="card-details">
+                            <div>
+                                <div class="card-sn">#${c.sn}</div>
+                                <div class="card-name">${c.name}</div>
+                                <div style="font-size:12px; color:${c.isSold ? '#888':'#007bff'}">${c.isSold ? '● 已賣出' : '● 持倉中'}</div>
+                            </div>
+                            <div class="price-badge ${colorClass}">
+                                $${c.currentPrice.toLocaleString()} (${diff >= 0 ? '+':''}${percent}%)
                             </div>
                         </div>
                     </div>
-                    <div class="chart-box" id="box-${doc.id}"><canvas id="chart-${doc.id}"></canvas></div>
+                    <div class="chart-container" id="chart-box-${c.sn}">
+                        <canvas id="canvas-${c.sn}"></canvas>
+                    </div>
+                    <div class="action-row">
+                        <div style="font-size:12px; color:#8e8e93;">買入價: $${c.buyPrice.toLocaleString()}</div>
+                        <button class="btn-update" onclick="quickUpdate('${c.sn}', ${c.currentPrice})">💸 更新時價</button>
+                    </div>
                 </div>
             `;
         });
-    });
+    }
 
-    function showChart(id) {
-        const box = document.getElementById(`box-${id}`);
-        const isOpening = box.style.display !== 'block';
-        if (isOpening) {
+    function toggleChart(sn) {
+        const box = document.getElementById(`chart-box-${sn}`);
+        const isShowing = box.style.display === 'block';
+        document.querySelectorAll('.chart-container').forEach(b => b.style.display = 'none');
+        
+        if (!isShowing) {
             box.style.display = 'block';
-            db.collection("cards").doc(id).get().then(doc => {
-                const history = doc.data().history || [];
-                const ctx = document.getElementById(`chart-${id}`).getContext('2d');
-                if(currentChart) currentChart.destroy();
-                currentChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: history.map(h => h.date),
-                        datasets: [{ label: '行情', data: history.map(h => h.price), borderColor: '#007bff', tension: 0.3, fill: false }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false }
-                });
+            const data = allCards.find(c => c.sn === sn);
+            const ctx = document.getElementById(`canvas-${sn}`).getContext('2d');
+            if(currentChart) currentChart.destroy();
+            currentChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.history.map(h => h.date),
+                    datasets: [{
+                        label: '行情走勢',
+                        data: data.history.map(h => h.price),
+                        borderColor: '#007bff',
+                        backgroundColor: 'rgba(0,123,255,0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
-        } else {
-            box.style.display = 'none';
         }
     }
 </script>
