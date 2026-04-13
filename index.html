@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PTCG 隨身管家</title>
+    <title>PTCG 數位收藏夾</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -14,35 +14,24 @@
     <style>
         :root { --up: #eb4034; --down: #1fa139; --primary: #007bff; }
         body { font-family: -apple-system, sans-serif; background: #f4f7f9; margin: 0; padding-bottom: 80px; }
-        
         .header { background: #333; color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; font-weight: bold; }
-        
-        /* 表單樣式 */
         .add-form { background: white; padding: 20px; display: none; border-bottom: 2px solid var(--primary); }
         .input-group { margin-bottom: 12px; }
         .input-group label { display: block; font-size: 13px; color: #666; margin-bottom: 4px; }
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        
-        /* 圖片上傳區 */
         .img-upload-box { width: 100%; height: 180px; border: 2px dashed #ccc; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #fafafa; cursor: pointer; }
         .img-upload-box img { width: 100%; height: 100%; object-fit: contain; }
-
-        /* 卡牌列表 */
         .card-list { padding: 12px; }
         .card-item { background: white; border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .card-info { display: flex; gap: 12px; align-items: flex-start; }
         .card-img { width: 80px; height: 110px; object-fit: cover; border-radius: 8px; background: #eee; }
         .card-text { flex: 1; }
         .price-row { display: flex; justify-content: space-between; margin-top: 10px; align-items: flex-end; }
-        
         .badge { font-size: 11px; padding: 2px 6px; border-radius: 4px; background: #eee; }
         .sold { background: #666; color: white; }
         .up-text { color: var(--up); font-weight: bold; }
         .down-text { color: var(--down); font-weight: bold; }
-
-        /* 圖表容器 */
         .chart-box { height: 200px; margin-top: 15px; display: none; border-top: 1px solid #f0f0f0; padding-top: 10px; }
-
         .fab { position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: white; width: 60px; height: 60px; border-radius: 30px; border: none; font-size: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
     </style>
 </head>
@@ -61,12 +50,11 @@
     </div>
     <div class="input-group"><label>序號</label><input type="text" id="sn" placeholder="例如: 001"></div>
     <div class="input-group"><label>名稱</label><input type="text" id="name" placeholder="例如: 噴火龍"></div>
+    <div class="input-group"><label>認證序號</label><input type="text" id="certId" placeholder="例如: PSA-10"></div>
+    <div class="input-group"><label>購入管道</label><input type="text" id="source" placeholder="例如: 官網"></div>
     <div class="input-group"><label>買進價</label><input type="number" id="buyPrice"></div>
     <div class="input-group"><label>目前行情</label><input type="number" id="currentPrice"></div>
-    <div class="input-group">
-        <label>購入管道 / 備註</label>
-        <textarea id="memo" rows="2"></textarea>
-    </div>
+    <div class="input-group"><label>備註</label><textarea id="memo" rows="2"></textarea></div>
     <div class="input-group">
         <label>狀態</label>
         <select id="isSold"><option value="false">持倉中</option><option value="true">已賣出</option></select>
@@ -75,18 +63,19 @@
 </div>
 
 <div class="card-list" id="cardList">載入資料中...</div>
-
 <button class="fab" onclick="toggleForm()">＋</button>
 
 <script>
-    // 【配置區】請填入你的 Firebase 資訊
+    // 這裡已填入你提供的 Firebase 配置
     const firebaseConfig = {
-        apiKey: "你的_API_KEY",
-        authDomain: "你的_PROJECT_ID.firebaseapp.com",
-        projectId: "你的_PROJECT_ID",
-        storageBucket: "你的_PROJECT_ID.appspot.com",
-        messagingSenderId: "你的_SENDER_ID",
-        appId: "你的_APP_ID"
+      apiKey: "AIzaSyCa_vS9uZ1niPmXQjlmWT1q6h16S_btALU",
+      authDomain: "ptcg-1645a.firebaseapp.com",
+      databaseURL: "https://ptcg-1645a-default-rtdb.firebaseio.com",
+      projectId: "ptcg-1645a",
+      storageBucket: "ptcg-1645a.firebasestorage.app",
+      messagingSenderId: "736309614311",
+      appId: "1:736309614311:web:1352e643e04be0a35d7442",
+      measurementId: "G-TP4D7ZRLLZ"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -94,7 +83,6 @@
     const storage = firebase.storage();
     let currentChart = null;
 
-    // 預覽圖片
     document.getElementById('fileInput').onchange = e => {
         const file = e.target.files[0];
         if (file) {
@@ -109,7 +97,6 @@
         f.style.display = f.style.display === 'block' ? 'none' : 'block';
     }
 
-    // 儲存資料
     async function saveData() {
         const sn = document.getElementById('sn').value;
         const name = document.getElementById('name').value;
@@ -124,52 +111,62 @@
         try {
             let imageUrl = "";
             if (file) {
-                const ref = storage.ref(`cards/${sn}`);
+                const ref = storage.ref(`cards/${sn}_${Date.now()}`);
                 await ref.put(file);
                 imageUrl = await ref.getDownloadURL();
             }
 
-            await db.collection("cards").doc(sn).set({
+            const cardRef = db.collection("cards").doc(sn);
+            const doc = await cardRef.get();
+            let history = [];
+            if(doc.exists) history = doc.data().history || [];
+            
+            history.push({
+                date: new Date().toLocaleDateString(),
+                price: currentPrice
+            });
+
+            await cardRef.set({
                 sn, name, buyPrice, currentPrice,
+                certId: document.getElementById('certId').value,
+                source: document.getElementById('source').value,
                 memo: document.getElementById('memo').value,
                 isSold: document.getElementById('isSold').value === 'true',
-                imageUrl: imageUrl || "",
-                // 記錄價格歷史
-                history: firebase.firestore.FieldValue.arrayUnion({
-                    date: new Date().toISOString().split('T')[0],
-                    price: currentPrice
-                }),
+                imageUrl: imageUrl || (doc.exists ? doc.data().imageUrl : ""),
+                history: history,
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             }, { merge: true });
 
             Swal.fire("成功", "資料已更新", "success");
             toggleForm();
+            document.getElementById('previewImg').style.display = 'none';
+            document.getElementById('plusSign').style.display = 'block';
         } catch (e) {
-            Swal.fire("儲存失敗", e.message, "error");
+            Swal.fire("儲存失敗", "請確保 Firestore 與 Storage 已開啟測試模式規則", "error");
+            console.error(e);
         }
     }
 
-    // 即時渲染清單
     db.collection("cards").orderBy("updatedAt", "desc").onSnapshot(snap => {
         const container = document.getElementById('cardList');
         container.innerHTML = "";
         snap.forEach(doc => {
             const d = doc.data();
             const diff = d.currentPrice - d.buyPrice;
-            const percent = ((diff / d.buyPrice) * 100).toFixed(1);
+            const percent = d.buyPrice ? ((diff / d.buyPrice) * 100).toFixed(1) : 0;
             
             container.innerHTML += `
                 <div class="card-item" onclick="showChart('${doc.id}')">
                     <div class="card-info">
                         <img class="card-img" src="${d.imageUrl || 'https://via.placeholder.com/80x110?text=No+Img'}">
                         <div class="card-text">
-                            <div style="font-size:12px; color:#888;">#${d.sn}</div>
+                            <div style="font-size:12px; color:#888;">#${d.sn} | ${d.source || '未知來源'}</div>
                             <div style="font-weight:bold; font-size:18px;">${d.name}</div>
                             <div class="badge ${d.isSold ? 'sold' : ''}">${d.isSold ? '已賣出' : '持倉中'}</div>
                         </div>
                     </div>
                     <div class="price-row">
-                        <div><small>買進 $${d.buyPrice}</small></div>
+                        <div><small>買進 $${d.buyPrice}</small><br><small>證號: ${d.certId || '-'}</small></div>
                         <div style="text-align:right">
                             <div class="${diff >= 0 ? 'up-text' : 'down-text'}">
                                 $${d.currentPrice} (${diff >= 0 ? '+' : ''}${percent}%)
@@ -185,8 +182,6 @@
     function showChart(id) {
         const box = document.getElementById(`box-${id}`);
         const isOpening = box.style.display !== 'block';
-        document.querySelectorAll('.chart-box').forEach(b => b.style.display = 'none');
-        
         if (isOpening) {
             box.style.display = 'block';
             db.collection("cards").doc(id).get().then(doc => {
@@ -197,11 +192,13 @@
                     type: 'line',
                     data: {
                         labels: history.map(h => h.date),
-                        datasets: [{ label: '時價', data: history.map(h => h.price), borderColor: '#007bff', tension: 0.3 }]
+                        datasets: [{ label: '行情', data: history.map(h => h.price), borderColor: '#007bff', tension: 0.3, fill: false }]
                     },
                     options: { responsive: true, maintainAspectRatio: false }
                 });
             });
+        } else {
+            box.style.display = 'none';
         }
     }
 </script>
