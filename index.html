@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PTCG 寶可夢圖鑑管理</title>
+    <title>PTCG 寶可夢圖鑑管理 (皮卡丘版)</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -12,62 +12,95 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-        /* 寶可夢主題配色 */
-        :root { --poke-red: #E3350D; --poke-yellow: #FFCC00; --poke-blue: #3164B0; --up-color: #eb4034; --down-color: #1fa139; --bg-gray: #f2f2f7; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg-gray); margin: 0; padding-bottom: 80px; color: #333; }
+        /* 皮卡丘主題配色 */
+        :root { 
+            --pika-yellow: rgb(243, 207, 63); 
+            --pika-dark: rgb(38, 28, 20); 
+            --pika-brown: rgb(160, 78, 6); 
+            --up-color: #eb4034; /* 台股紅 */
+            --down-color: #1fa139; /* 台股綠 */
+            --bg-gray: #f8f8f8; 
+        }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg-gray); margin: 0; padding-bottom: 80px; color: var(--pika-dark); }
         
-        /* 頂部 Header - 精靈球風格 */
-        .header { background: var(--poke-red); color: white; padding: 20px 15px 15px; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-bottom: 4px solid #222; }
-        .title { font-size: 22px; font-weight: 900; letter-spacing: 1px; text-shadow: 1px 1px 0 #000; display: flex; align-items: center; justify-content: space-between; }
-        .search-bar { background: white; border-radius: 20px; padding: 8px 15px; margin-top: 15px; display: flex; align-items: center; border: 2px solid #222; }
-        .search-bar input { border: none; outline: none; width: 100%; font-size: 16px; margin-left: 8px; color: #333; }
+        /* 登入畫面 */
+        #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--pika-yellow); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .login-box { background: white; padding: 30px; border-radius: 15px; text-align: center; box-shadow: 0 10px 20px rgba(38, 28, 20, 0.2); border: 3px solid var(--pika-dark); width: 80%; max-width: 350px; }
+        .login-box input { width: 100%; padding: 12px; margin: 15px 0; border: 2px solid #ccc; border-radius: 8px; font-size: 20px; text-align: center; box-sizing: border-box; }
+        .login-box button { width: 100%; background: var(--pika-brown); color: white; border: none; padding: 12px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
+
+        /* 頂部 Header */
+        .header { background: var(--pika-yellow); color: var(--pika-dark); padding: 20px 15px 15px; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-bottom: 4px solid var(--pika-dark); }
+        .title { font-size: 24px; font-weight: 900; letter-spacing: 1px; display: flex; align-items: center; justify-content: space-between; }
+        .search-bar { background: white; border-radius: 20px; padding: 8px 15px; margin-top: 15px; display: flex; align-items: center; border: 2px solid var(--pika-dark); }
+        .search-bar input { border: none; outline: none; width: 100%; font-size: 16px; margin-left: 8px; color: var(--pika-dark); }
         
         /* 方格展示區 (Grid) */
-        .card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 15px; }
-        .grid-item { background: white; border-radius: 12px; padding: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); position: relative; border: 1px solid #ddd; }
+        .card-grid { display: grid; gap: 12px; padding: 15px; }
+        .grid-item { background: white; border-radius: 12px; padding: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); position: relative; border: 2px solid #eee; cursor: pointer; }
         .grid-img-box { width: 100%; height: 160px; border-radius: 8px; background: #eee; overflow: hidden; margin-bottom: 8px; border: 1px solid #ccc; }
         .grid-img-box img { width: 100%; height: 100%; object-fit: cover; }
-        .grid-sn { font-size: 11px; background: #222; color: white; padding: 2px 6px; border-radius: 4px; position: absolute; top: 15px; left: 15px; font-weight: bold; }
-        .grid-sold { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.7); color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; }
+        .grid-sn { font-size: 12px; background: var(--pika-dark); color: var(--pika-yellow); padding: 2px 8px; border-radius: 4px; position: absolute; top: 15px; left: 15px; font-weight: bold; }
+        .grid-sold { position: absolute; top: 15px; right: 15px; background: rgba(38,28,20,0.8); color: white; font-size: 11px; padding: 2px 6px; border-radius: 4px; }
         
         .grid-price-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 5px; font-size: 13px; }
         .up-text { color: var(--up-color); font-weight: bold; }
         .down-text { color: var(--down-color); font-weight: bold; }
 
+        /* 版本排版設定 */
+        .mobile-view .card-grid { grid-template-columns: repeat(2, 1fr); }
+        .desktop-view .header { max-width: 1000px; margin: 0 auto; border-radius: 0 0 15px 15px; }
+        .desktop-view .card-grid { grid-template-columns: repeat(4, 1fr); max-width: 1000px; margin: 0 auto; }
+        @media (min-width: 1200px) { .desktop-view .card-grid { grid-template-columns: repeat(5, 1fr); max-width: 1200px; } .desktop-view .header { max-width: 1200px; } }
+
         /* 詳細資訊彈窗 (Modal) */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 200; overflow-y: auto; padding-bottom: 30px; }
-        .modal-header { background: var(--poke-red); color: white; padding: 15px; text-align: center; font-weight: bold; font-size: 18px; position: sticky; top: 0; border-bottom: 3px solid #222; display: flex; justify-content: space-between; align-items: center; }
-        .close-btn { background: none; border: none; color: white; font-size: 24px; font-weight: bold; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 200; overflow-y: auto; align-items: center; justify-content: center; }
+        .modal-container { background: white; width: 95%; max-width: 500px; border-radius: 16px; overflow: hidden; border: 4px solid var(--pika-dark); margin: 20px auto; }
+        .modal-header { background: var(--pika-yellow); color: var(--pika-dark); padding: 15px; text-align: center; font-weight: bold; font-size: 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--pika-dark); }
+        .close-btn { background: none; border: none; color: var(--pika-dark); font-size: 28px; font-weight: bold; cursor: pointer; }
         
-        .modal-content { padding: 20px; }
-        .detail-img { width: 100%; max-height: 300px; object-fit: contain; background: #eee; border-radius: 12px; margin-bottom: 15px; border: 2px solid #ccc; }
+        .modal-content { padding: 20px; max-height: 70vh; overflow-y: auto; }
+        .detail-img { width: 100%; max-height: 280px; object-fit: contain; background: #eee; border-radius: 12px; margin-bottom: 15px; border: 2px solid #ccc; }
         .info-group { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
-        .info-label { font-size: 12px; color: #888; margin-bottom: 2px; }
+        .info-label { font-size: 12px; color: #666; margin-bottom: 2px; }
         .info-value { font-size: 16px; font-weight: bold; }
         
-        .action-btns { display: flex; gap: 10px; margin-top: 20px; }
-        .btn-edit { flex: 1; background: var(--poke-blue); color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; }
-        .btn-delete { flex: 1; background: #d9534f; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; }
+        /* 快速更新行情區塊 */
+        .quick-update-box { background: #fff8dc; border: 2px dashed var(--pika-yellow); border-radius: 10px; padding: 12px; margin-top: 15px; }
+        .quick-update-row { display: flex; gap: 10px; margin-top: 5px; }
+        .quick-update-row input { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; }
+        .quick-update-row button { background: var(--pika-brown); color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; }
 
-        /* 新增/編輯表單彈窗 */
+        .action-btns { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-edit { flex: 1; background: var(--pika-dark); color: var(--pika-yellow); padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-delete { flex: 1; background: #d9534f; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+        /* 新增/修改表單彈窗 */
         .form-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 300; align-items: center; justify-content: center; }
-        .form-box { background: white; width: 90%; max-height: 90%; border-radius: 16px; padding: 20px; overflow-y: auto; }
+        .form-box { background: white; width: 90%; max-width: 500px; max-height: 90%; border-radius: 16px; padding: 20px; overflow-y: auto; border: 4px solid var(--pika-dark); }
         .input-item { margin-bottom: 12px; }
         .input-item label { display: block; font-size: 13px; color: #555; margin-bottom: 4px; font-weight: bold; }
         .input-item input, .input-item select, .input-item textarea { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        .img-upload { height: 150px; border: 2px dashed var(--poke-red); border-radius: 12px; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--poke-red); font-weight: bold; overflow: hidden; background: #fff0f0; }
+        .img-upload { height: 150px; border: 2px dashed var(--pika-brown); border-radius: 12px; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--pika-brown); font-weight: bold; overflow: hidden; background: #fafafa; cursor: pointer; }
 
         /* 圖表 */
-        .chart-box { height: 220px; margin-top: 20px; background: #f9f9f9; border-radius: 12px; padding: 10px; border: 1px solid #ddd; }
+        .chart-box { height: 220px; margin-top: 20px; background: #fff; border-radius: 12px; padding: 10px; border: 1px solid #ddd; }
 
-        .fab { position: fixed; bottom: 20px; right: 20px; background: var(--poke-red); border: 3px solid #222; color: white; width: 60px; height: 60px; border-radius: 30px; font-size: 32px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 100; font-weight: bold; }
+        .fab { position: fixed; bottom: 20px; right: 20px; background: var(--pika-yellow); border: 3px solid var(--pika-dark); color: var(--pika-dark); width: 60px; height: 60px; border-radius: 30px; font-size: 32px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 100; font-weight: bold; cursor: pointer; }
     </style>
 </head>
-<body>
+<body class="mobile-view"> <div id="loginScreen">
+    <div class="login-box">
+        <h2 style="margin-top:0; color:var(--pika-dark);">⚡ 系統登入</h2>
+        <p style="font-size: 13px; color: #666;">輸入 0000 為手機版<br>輸入 1234 為電腦版</p>
+        <input type="password" id="loginPwd" placeholder="請輸入密碼">
+        <button onclick="checkLogin()">進入系統</button>
+    </div>
+</div>
 
 <div class="header">
     <div class="title">
-        <span>🔴 圖鑑管理系統</span>
+        <span>⚡ 寶可夢圖鑑管理</span>
     </div>
     <div class="search-bar">
         <span>🔍</span>
@@ -80,34 +113,44 @@
 <button class="fab" onclick="openForm()">＋</button>
 
 <div id="detailModal" class="modal">
-    <div class="modal-header">
-        <span>卡牌詳細資訊</span>
-        <button class="close-btn" onclick="closeDetail()">×</button>
-    </div>
-    <div class="modal-content">
-        <img id="detImg" class="detail-img" src="">
-        <div class="info-group"><div class="info-label">名稱</div><div class="info-value" id="detName"></div></div>
-        <div class="info-group"><div class="info-label">序號</div><div class="info-value" id="detSn"></div></div>
-        <div class="info-group"><div class="info-label">認證序號</div><div class="info-value" id="detCert"></div></div>
-        <div class="info-group"><div class="info-label">購入管道</div><div class="info-value" id="detSource"></div></div>
-        <div class="info-group" style="display:flex; justify-content: space-between;">
-            <div><div class="info-label">買進價</div><div class="info-value" id="detBuy"></div></div>
-            <div style="text-align:right"><div class="info-label">當前行情</div><div class="info-value" id="detCurrent"></div></div>
+    <div class="modal-container">
+        <div class="modal-header">
+            <span>卡牌詳細資訊</span>
+            <button class="close-btn" onclick="closeDetail()">×</button>
         </div>
-        <div class="info-group"><div class="info-label">備註</div><div class="info-value" style="font-weight:normal;" id="detMemo"></div></div>
-        
-        <div class="chart-box"><canvas id="priceChart"></canvas></div>
+        <div class="modal-content">
+            <img id="detImg" class="detail-img" src="">
+            <div class="info-group"><div class="info-label">名稱</div><div class="info-value" id="detName"></div></div>
+            <div class="info-group"><div class="info-label">序號</div><div class="info-value" id="detSn"></div></div>
+            <div class="info-group"><div class="info-label">認證序號</div><div class="info-value" id="detCert"></div></div>
+            <div class="info-group"><div class="info-label">購入管道</div><div class="info-value" id="detSource"></div></div>
+            <div class="info-group" style="display:flex; justify-content: space-between;">
+                <div><div class="info-label">買進價</div><div class="info-value" id="detBuy"></div></div>
+                <div style="text-align:right"><div class="info-label">當前行情</div><div class="info-value" id="detCurrent"></div></div>
+            </div>
+            <div class="info-group"><div class="info-label">備註</div><div class="info-value" style="font-weight:normal; font-size:14px;" id="detMemo"></div></div>
+            
+            <div class="quick-update-box">
+                <div class="info-label" style="color:var(--pika-brown); font-weight:bold;">💸 獨立更新行情價</div>
+                <div class="quick-update-row">
+                    <input type="number" id="quickPriceInput" placeholder="輸入最新市場價">
+                    <button onclick="submitQuickPrice()">更新</button>
+                </div>
+            </div>
 
-        <div class="action-btns">
-            <button class="btn-edit" onclick="editCurrentCard()">✏️ 修改</button>
-            <button class="btn-delete" onclick="deleteCurrentCard()">🗑️ 刪除</button>
+            <div class="chart-box"><canvas id="priceChart"></canvas></div>
+
+            <div class="action-btns">
+                <button class="btn-edit" onclick="editCurrentCard()">✏️ 完整修改</button>
+                <button class="btn-delete" onclick="deleteCurrentCard()">🗑️ 刪除</button>
+            </div>
         </div>
     </div>
 </div>
 
 <div id="formModal" class="form-modal">
     <div class="form-box">
-        <h3 id="formTitle" style="margin-top:0; color:var(--poke-red); border-bottom:2px solid #eee; padding-bottom:10px;">登錄卡牌</h3>
+        <h3 id="formTitle" style="margin-top:0; color:var(--pika-dark); border-bottom:2px solid #eee; padding-bottom:10px;">登錄卡牌</h3>
         <div class="input-item">
             <div class="img-upload" onclick="document.getElementById('fileInput').click()">
                 <img id="previewImg" style="display:none; width:100%; height:100%; object-fit:contain;">
@@ -126,13 +169,27 @@
             <label>狀態</label>
             <select id="isSold"><option value="false">持倉中</option><option value="true">已賣出</option></select>
         </div>
-        <button onclick="saveData()" style="width:100%; padding:15px; background:var(--poke-red); color:white; border:none; border-radius:8px; font-size:16px; font-weight:bold; margin-bottom:10px;">確認儲存</button>
-        <button onclick="closeForm()" style="width:100%; padding:12px; background:#eee; border:none; border-radius:8px; font-size:16px;">取消</button>
+        <button onclick="saveData()" style="width:100%; padding:15px; background:var(--pika-brown); color:white; border:none; border-radius:8px; font-size:16px; font-weight:bold; margin-bottom:10px; cursor:pointer;">確認儲存</button>
+        <button onclick="closeForm()" style="width:100%; padding:12px; background:#eee; color:#333; border:none; border-radius:8px; font-size:16px; cursor:pointer;">取消</button>
     </div>
 </div>
 
 <script>
-    // ⚠️ 記得替換成你的 Firebase 金鑰
+    // 登入驗證與版面切換邏輯
+    function checkLogin() {
+        const pwd = document.getElementById('loginPwd').value;
+        if (pwd === '0000') {
+            document.body.className = 'mobile-view';
+            document.getElementById('loginScreen').style.display = 'none';
+        } else if (pwd === '1234') {
+            document.body.className = 'desktop-view';
+            document.getElementById('loginScreen').style.display = 'none';
+        } else {
+            Swal.fire("錯誤", "密碼不正確！", "error");
+        }
+    }
+
+    // Firebase 金鑰
     const firebaseConfig = {
       apiKey: "AIzaSyCa_vS9uZ1niPmXQjlmWT1q6h16S_btALU",
       authDomain: "ptcg-1645a.firebaseapp.com",
@@ -147,11 +204,10 @@
     const storage = firebase.storage();
     
     let allCards = [];
-    let currentDetailCard = null; // 紀錄目前打開的卡片
+    let currentDetailCard = null; 
     let currentChart = null;
-    let isEditing = false; // 判斷是新增還是修改
+    let isEditing = false; 
 
-    // 圖片預覽
     function previewFile(input) {
         const file = input.files[0];
         if (file) {
@@ -161,15 +217,13 @@
         }
     }
 
-    // 彈窗控制
     function openForm(editData = null) {
         isEditing = !!editData;
         document.getElementById('formModal').style.display = 'flex';
         document.getElementById('formTitle').innerText = isEditing ? "✏️ 修改卡牌資訊" : "➕ 新增卡牌";
         
-        // 欄位處理
         document.getElementById('sn').value = editData ? editData.sn : "";
-        document.getElementById('sn').disabled = isEditing; // 編輯時不允許改序號
+        document.getElementById('sn').disabled = isEditing; 
         document.getElementById('name').value = editData ? editData.name : "";
         document.getElementById('certId').value = editData ? (editData.certId || "") : "";
         document.getElementById('source').value = editData ? (editData.source || "") : "";
@@ -178,10 +232,9 @@
         document.getElementById('memo').value = editData ? (editData.memo || "") : "";
         document.getElementById('isSold').value = editData ? String(editData.isSold) : "false";
         
-        // 圖片處理
         const preview = document.getElementById('previewImg');
         const hint = document.getElementById('uploadHint');
-        document.getElementById('fileInput').value = ""; // 清空檔案選擇
+        document.getElementById('fileInput').value = ""; 
         if (editData && editData.imageUrl) {
             preview.src = editData.imageUrl;
             preview.style.display = 'block';
@@ -196,7 +249,6 @@
     function closeForm() { document.getElementById('formModal').style.display = 'none'; }
     function closeDetail() { document.getElementById('detailModal').style.display = 'none'; }
 
-    // 資料儲存 (新增與修改共用)
     async function saveData() {
         const sn = document.getElementById('sn').value;
         const name = document.getElementById('name').value;
@@ -211,17 +263,15 @@
         try {
             const cardRef = db.collection("cards").doc(sn);
             const docSnap = await cardRef.get();
-            let imageUrl = isEditing ? docSnap.data().imageUrl : ""; // 編輯時保留舊圖
+            let imageUrl = isEditing ? docSnap.data().imageUrl : ""; 
             let history = (docSnap.exists && docSnap.data().history) ? docSnap.data().history : [];
 
-            // 如果有新選圖片，才上傳新圖
             if (file) {
                 const imgRef = storage.ref(`cards/${sn}_${Date.now()}`);
                 await imgRef.put(file);
                 imageUrl = await imgRef.getDownloadURL();
             }
 
-            // 如果價格有變，新增歷史紀錄 (台股邏輯)
             if (history.length === 0 || history[history.length-1].price !== currentPrice) {
                 history.push({ date: new Date().toLocaleDateString(), price: currentPrice });
             }
@@ -237,7 +287,6 @@
 
             await cardRef.set(dataToSave, { merge: true });
             
-            // 如果是在詳細頁面點擊修改，存檔後更新詳細頁面的顯示
             if (isEditing && currentDetailCard) {
                 currentDetailCard = { ...currentDetailCard, ...dataToSave };
                 showDetail(sn); 
@@ -250,7 +299,40 @@
         }
     }
 
-    // 刪除功能
+    // 獨立快速更新行情價功能
+    async function submitQuickPrice() {
+        const newPrice = parseFloat(document.getElementById('quickPriceInput').value);
+        if (!newPrice || !currentDetailCard) return Swal.fire("提醒", "請輸入有效的行情價", "warning");
+
+        Swal.fire({ title: '更新中...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+        try {
+            const sn = currentDetailCard.sn;
+            const cardRef = db.collection("cards").doc(sn);
+            
+            // 將新價格加入歷史紀錄
+            let history = currentDetailCard.history || [];
+            history.push({ date: new Date().toLocaleDateString(), price: newPrice });
+
+            await cardRef.update({
+                currentPrice: newPrice,
+                history: history,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            // 更新畫面資料
+            currentDetailCard.currentPrice = newPrice;
+            currentDetailCard.history = history;
+            
+            document.getElementById('quickPriceInput').value = ""; // 清空輸入框
+            showDetail(sn); // 重新渲染視窗
+            
+            Swal.fire("更新成功", `最新時價已更新為 $${newPrice}`, "success");
+        } catch (e) {
+            Swal.fire("錯誤", "更新失敗: " + e.message, "error");
+        }
+    }
+
     async function deleteCurrentCard() {
         if (!currentDetailCard) return;
         const sn = currentDetailCard.sn;
@@ -260,7 +342,7 @@
             text: "刪除後資料將無法恢復！",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#d33',
+            confirmButtonColor: '#d9534f',
             cancelButtonColor: '#aaa',
             confirmButtonText: '確定刪除'
         });
@@ -277,12 +359,10 @@
         }
     }
 
-    // 觸發編輯
     function editCurrentCard() {
         if (currentDetailCard) openForm(currentDetailCard);
     }
 
-    // 即時監聽與方格渲染
     db.collection("cards").orderBy("updatedAt", "desc").onSnapshot(snap => {
         allCards = [];
         snap.forEach(doc => allCards.push(doc.data()));
@@ -318,7 +398,6 @@
         });
     }
 
-    // 顯示詳細資訊與圖表
     function showDetail(sn) {
         const card = allCards.find(c => c.sn === sn) || currentDetailCard;
         if (!card) return;
@@ -339,9 +418,9 @@
         
         document.getElementById('detCurrent').innerHTML = `<span class="${colorClass}">$${card.currentPrice.toLocaleString()} (${sign}${percent}%)</span>`;
         
-        document.getElementById('detailModal').style.display = 'block';
+        document.getElementById('detailModal').style.display = 'flex';
 
-        // 畫線圖
+        // 畫線圖 (線條改為皮卡丘棕色)
         const ctx = document.getElementById('priceChart').getContext('2d');
         if (currentChart) currentChart.destroy();
         currentChart = new Chart(ctx, {
@@ -351,8 +430,8 @@
                 datasets: [{
                     label: '市場時價',
                     data: (card.history||[]).map(h => h.price),
-                    borderColor: '#E3350D',
-                    backgroundColor: 'rgba(227, 53, 13, 0.1)',
+                    borderColor: 'rgb(160, 78, 6)',
+                    backgroundColor: 'rgba(160, 78, 6, 0.1)',
                     fill: true,
                     tension: 0.2
                 }]
