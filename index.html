@@ -59,7 +59,7 @@
         .modal-header { background: var(--pika-yellow); color: var(--pika-dark); padding: 15px; text-align: center; font-weight: bold; font-size: 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--pika-dark); }
         .close-btn { background: none; border: none; color: var(--pika-dark); font-size: 28px; font-weight: bold; cursor: pointer; }
         
-        .modal-content { padding: 20px; max-height: 70vh; overflow-y: auto; }
+        .modal-content { padding: 20px; max-height: 75vh; overflow-y: auto; }
         .detail-img { width: 100%; max-height: 280px; object-fit: contain; background: #eee; border-radius: 12px; margin-bottom: 15px; border: 2px solid #ccc; }
         .info-group { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
         .info-label { font-size: 12px; color: #666; margin-bottom: 2px; }
@@ -70,6 +70,15 @@
         .quick-update-row { display: flex; gap: 10px; margin-top: 5px; }
         .quick-update-row input { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; }
         .quick-update-row button { background: var(--pika-brown); color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+        /* 圖表與切換按鈕區塊 */
+        .chart-wrapper { margin-top: 20px; border: 2px solid #ddd; padding: 12px; border-radius: 12px; background: #fff; }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .chart-title { font-weight: bold; color: var(--pika-dark); font-size: 14px; }
+        .chart-tabs { display: flex; background: #f0f0f0; border-radius: 6px; overflow: hidden; border: 1px solid #ccc; }
+        .chart-tab { flex: 1; padding: 6px 10px; font-size: 12px; border: none; background: transparent; cursor: pointer; color: #555; font-weight: bold; transition: 0.2s; }
+        .chart-tab.active { background: var(--pika-brown); color: white; }
+        .chart-box { height: 200px; width: 100%; }
 
         .action-btns { display: flex; gap: 10px; margin-top: 20px; }
         .btn-edit { flex: 1; background: var(--pika-dark); color: var(--pika-yellow); padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
@@ -83,13 +92,12 @@
         .input-item input, .input-item select, .input-item textarea { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
         .img-upload { height: 150px; border: 2px dashed var(--pika-brown); border-radius: 12px; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--pika-brown); font-weight: bold; overflow: hidden; background: #fafafa; cursor: pointer; }
 
-        /* 圖表 */
-        .chart-box { height: 220px; margin-top: 20px; background: #fff; border-radius: 12px; padding: 10px; border: 1px solid #ddd; }
-
         .fab { position: fixed; bottom: 20px; right: 20px; background: var(--pika-yellow); border: 3px solid var(--pika-dark); color: var(--pika-dark); width: 60px; height: 60px; border-radius: 30px; font-size: 32px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 100; font-weight: bold; cursor: pointer; }
     </style>
 </head>
-<body class="mobile-view"> <div id="loginScreen">
+<body class="mobile-view"> 
+
+<div id="loginScreen">
     <div class="login-box">
         <h2 style="margin-top:0; color:var(--pika-dark);">⚡ 系統登入</h2>
         <p style="font-size: 13px; color: #666;">輸入 0000 為手機版<br>輸入 1234 為電腦版</p>
@@ -138,7 +146,17 @@
                 </div>
             </div>
 
-            <div class="chart-box"><canvas id="priceChart"></canvas></div>
+            <div class="chart-wrapper">
+                <div class="chart-header">
+                    <div class="chart-title">📈 歷史行情走勢</div>
+                    <div class="chart-tabs">
+                        <button class="chart-tab active" id="tab-day" onclick="changeChartView('day')">日線</button>
+                        <button class="chart-tab" id="tab-week" onclick="changeChartView('week')">周線</button>
+                        <button class="chart-tab" id="tab-month" onclick="changeChartView('month')">月線</button>
+                    </div>
+                </div>
+                <div class="chart-box"><canvas id="priceChart"></canvas></div>
+            </div>
 
             <div class="action-btns">
                 <button class="btn-edit" onclick="editCurrentCard()">✏️ 完整修改</button>
@@ -207,6 +225,7 @@
     let currentDetailCard = null; 
     let currentChart = null;
     let isEditing = false; 
+    let currentChartViewType = 'day';
 
     function previewFile(input) {
         const file = input.files[0];
@@ -272,8 +291,12 @@
                 imageUrl = await imgRef.getDownloadURL();
             }
 
-            if (history.length === 0 || history[history.length-1].price !== currentPrice) {
-                history.push({ date: new Date().toLocaleDateString(), price: currentPrice });
+            // 確保相同日期的只更新，不同日期的才推進陣列
+            const todayStr = new Date().toLocaleDateString();
+            if (history.length === 0 || history[history.length-1].date !== todayStr) {
+                history.push({ date: todayStr, price: currentPrice });
+            } else {
+                history[history.length-1].price = currentPrice;
             }
 
             const dataToSave = {
@@ -310,9 +333,15 @@
             const sn = currentDetailCard.sn;
             const cardRef = db.collection("cards").doc(sn);
             
-            // 將新價格加入歷史紀錄
             let history = currentDetailCard.history || [];
-            history.push({ date: new Date().toLocaleDateString(), price: newPrice });
+            const todayStr = new Date().toLocaleDateString();
+            
+            // 如果今天已經更新過，就直接覆蓋今天的價格，否則新增一筆
+            if (history.length > 0 && history[history.length - 1].date === todayStr) {
+                history[history.length - 1].price = newPrice;
+            } else {
+                history.push({ date: todayStr, price: newPrice });
+            }
 
             await cardRef.update({
                 currentPrice: newPrice,
@@ -320,12 +349,11 @@
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
 
-            // 更新畫面資料
             currentDetailCard.currentPrice = newPrice;
             currentDetailCard.history = history;
             
-            document.getElementById('quickPriceInput').value = ""; // 清空輸入框
-            showDetail(sn); // 重新渲染視窗
+            document.getElementById('quickPriceInput').value = ""; 
+            showDetail(sn); // 重新渲染視窗與圖表
             
             Swal.fire("更新成功", `最新時價已更新為 $${newPrice}`, "success");
         } catch (e) {
@@ -398,6 +426,84 @@
         });
     }
 
+    // --- 圖表資料處理邏輯 ---
+    function processChartData(history, viewType) {
+        if (!history || history.length === 0) return { labels: [], data: [] };
+        const map = new Map();
+
+        history.forEach(item => {
+            const d = new Date(item.date);
+            if(isNaN(d)) return;
+            
+            let key, displayLabel;
+            if (viewType === 'month') {
+                key = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+                displayLabel = key;
+            } else if (viewType === 'week') {
+                const temp = new Date(d);
+                const day = temp.getDay();
+                const diff = temp.getDate() - day + (day === 0 ? -6 : 1);
+                const monday = new Date(temp.setDate(diff));
+                key = `${monday.getFullYear()}/${String(monday.getMonth() + 1).padStart(2, '0')}/${String(monday.getDate()).padStart(2, '0')}`;
+                displayLabel = key + ' (周)';
+            } else {
+                key = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
+                displayLabel = key;
+            }
+            // 使用 Map 自動覆蓋同一區間的價格，保留該區間最新價
+            map.set(key, { label: displayLabel, price: item.price, timestamp: d.getTime() });
+        });
+
+        // 照時間排序
+        const sorted = Array.from(map.values()).sort((a, b) => a.timestamp - b.timestamp);
+        return { labels: sorted.map(x => x.label), data: sorted.map(x => x.price) };
+    }
+
+    function changeChartView(type) {
+        currentChartViewType = type;
+        
+        // 變更按鈕樣式
+        document.querySelectorAll('.chart-tab').forEach(el => el.classList.remove('active'));
+        document.getElementById(`tab-${type}`).classList.add('active');
+
+        if (currentDetailCard) {
+            renderChart(currentDetailCard, type);
+        }
+    }
+
+    function renderChart(card, viewType) {
+        const chartData = processChartData(card.history || [], viewType);
+        const ctx = document.getElementById('priceChart').getContext('2d');
+        
+        if (currentChart) currentChart.destroy();
+        
+        currentChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartData.labels,
+                datasets: [{
+                    label: '市場時價',
+                    data: chartData.data,
+                    borderColor: 'rgb(160, 78, 6)',
+                    backgroundColor: 'rgba(160, 78, 6, 0.1)',
+                    fill: true,
+                    tension: 0.2,
+                    pointRadius: 3
+                }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: {
+                        ticks: { maxTicksLimit: 6 } // 自動限制 X 軸標籤數量，防止擁擠
+                    }
+                }
+            }
+        });
+    }
+
     function showDetail(sn) {
         const card = allCards.find(c => c.sn === sn) || currentDetailCard;
         if (!card) return;
@@ -420,24 +526,8 @@
         
         document.getElementById('detailModal').style.display = 'flex';
 
-        // 畫線圖 (線條改為皮卡丘棕色)
-        const ctx = document.getElementById('priceChart').getContext('2d');
-        if (currentChart) currentChart.destroy();
-        currentChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: (card.history||[]).map(h => h.date),
-                datasets: [{
-                    label: '市場時價',
-                    data: (card.history||[]).map(h => h.price),
-                    borderColor: 'rgb(160, 78, 6)',
-                    backgroundColor: 'rgba(160, 78, 6, 0.1)',
-                    fill: true,
-                    tension: 0.2
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-        });
+        // 渲染圖表，使用目前的視圖設定 (預設是日線)
+        renderChart(card, currentChartViewType);
     }
 </script>
 </body>
