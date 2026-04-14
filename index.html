@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PTCG Pro 3.1 專業財務版</title>
+    <title>PTCG Pro 3.2 專業財務版</title>
     
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
     
@@ -25,13 +25,18 @@
         .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
         .numpad button { width: 75px; height: 75px; border-radius: 50%; background: white; color: var(--pika-yellow); font-size: 32px; font-weight: 900; border: 3px solid var(--pika-dark); box-shadow: 0 5px 0 var(--pika-dark); -webkit-text-stroke: 1px var(--pika-dark); cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-        /* 財務儀表板 */
-        .dashboard { background: var(--pika-dark); color: white; padding: 20px; border-radius: 0 0 20px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .stat-card { background: rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); }
-        .stat-label { font-size: 11px; color: #aaa; margin-bottom: 5px; font-weight: bold; }
-        .stat-value { font-size: 18px; font-weight: 900; }
+        /* 財務儀表板 (全新排版) */
+        .dashboard { background: var(--pika-dark); color: white; padding: 15px; border-radius: 0 0 20px 20px; display: flex; flex-direction: column; gap: 12px; }
+        .dash-section { background: rgba(255,255,255,0.08); border-radius: 12px; padding: 12px; border: 1px solid rgba(255,255,255,0.15); }
+        .dash-section-title { font-size: 13px; color: var(--pika-yellow); font-weight: 900; margin-bottom: 8px; border-bottom: 1px solid rgba(243,207,63,0.3); padding-bottom: 4px; }
+        .dash-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .dash-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .stat-item { display: flex; flex-direction: column; }
+        .stat-label { font-size: 11px; color: #bbb; font-weight: bold; margin-bottom: 2px; }
+        .stat-value { font-size: 16px; font-weight: 900; }
         .stat-value.up { color: var(--up); }
         .stat-value.down { color: #50ff7b; }
+        .total-section { display: flex; justify-content: space-between; align-items: center; background: rgba(243, 207, 63, 0.15); border: 1px solid var(--pika-yellow); }
 
         /* Header */
         .header { background: var(--pika-yellow); padding: 15px; border-bottom: 4px solid var(--pika-dark); position: sticky; top: 0; z-index: 100; border-radius: 0 0 15px 15px; }
@@ -97,17 +102,26 @@
 </div>
 
 <div class="dashboard">
-    <div class="stat-card">
-        <div class="stat-label">持倉總損益 (未實現)</div>
-        <div id="stat-active" class="stat-value">--</div>
+    <div class="dash-section">
+        <div class="dash-section-title">📦 持倉統計 (未實現)</div>
+        <div class="dash-grid">
+            <div class="stat-item"><div class="stat-label">持有張數</div><div class="stat-value" id="stat-active-count">0</div></div>
+            <div class="stat-item"><div class="stat-label">投入金額</div><div class="stat-value" id="stat-active-invest">$0</div></div>
+            <div class="stat-item"><div class="stat-label">目前市值</div><div class="stat-value" id="stat-active-market">$0</div></div>
+            <div class="stat-item"><div class="stat-label">持倉損益</div><div class="stat-value" id="stat-active-gain">0</div></div>
+        </div>
     </div>
-    <div class="stat-card">
-        <div class="stat-label">售出總損益 (已實現)</div>
-        <div id="stat-sold" class="stat-value">--</div>
+    <div class="dash-section">
+        <div class="dash-section-title">🤝 售出統計 (已實現)</div>
+        <div class="dash-grid-3">
+            <div class="stat-item"><div class="stat-label">賣出張數</div><div class="stat-value" id="stat-sold-count">0</div></div>
+            <div class="stat-item"><div class="stat-label">賣出總額</div><div class="stat-value" id="stat-sold-revenue">$0</div></div>
+            <div class="stat-item"><div class="stat-label">已實現損益</div><div class="stat-value" id="stat-sold-gain">0</div></div>
+        </div>
     </div>
-    <div class="stat-card" style="grid-column: span 2;">
-        <div class="stat-label">所有卡牌累積總盈虧</div>
-        <div id="stat-total" class="stat-value" style="font-size: 24px;">--</div>
+    <div class="dash-section total-section">
+        <div class="stat-label" style="color:var(--pika-dark); font-size:14px;">⚡ 所有卡牌累積盈虧</div>
+        <div class="stat-value" id="stat-total" style="font-size: 22px;">--</div>
     </div>
 </div>
 
@@ -183,7 +197,7 @@
         }
     }
 
-    // Firebase 配置 (已套用你的專案 ID)
+    // Firebase 配置 
     const firebaseConfig = {
       apiKey: "AIzaSyCa_vS9uZ1niPmXQjlmWT1q6h16S_btALU",
       authDomain: "ptcg-1645a.firebaseapp.com",
@@ -299,31 +313,48 @@
         } catch (e) { Swal.fire("錯誤", e.message, "error"); }
     }
 
-    // 財務計算邏輯 (核心優化)
+    // 財務計算邏輯 (新增 張數、市值、投入總額)
     function calculateFinancials() {
         let activeGain = 0, soldGain = 0;
+        let activeCount = 0, activeInvest = 0, activeMarketValue = 0;
+        let soldCount = 0, soldTotalRevenue = 0;
+
         allCards.forEach(c => {
             const buy = c.buyPrice || 0;
             if (c.isSold) {
-                // 已售出：使用售價計算實際獲利
+                soldCount++;
                 const sell = c.sellPrice || 0;
+                soldTotalRevenue += sell;
                 soldGain += (sell - buy);
             } else {
-                // 持倉中：使用時價計算帳面盈虧
+                activeCount++;
+                activeInvest += buy;
                 const current = c.currentPrice || 0;
+                activeMarketValue += current;
                 activeGain += (current - buy);
             }
         });
         
-        const updateStat = (id, val) => {
+        const formatMoney = val => '$' + val.toLocaleString();
+        const updateGain = (id, val) => {
             const el = document.getElementById(id);
             el.innerText = (val >= 0 ? '+' : '') + val.toLocaleString();
             el.className = 'stat-value ' + (val >= 0 ? 'up' : 'down');
         };
 
-        updateStat('stat-active', activeGain);
-        updateStat('stat-sold', soldGain);
-        updateStat('stat-total', activeGain + soldGain);
+        // 更新持倉區塊
+        document.getElementById('stat-active-count').innerText = activeCount;
+        document.getElementById('stat-active-invest').innerText = formatMoney(activeInvest);
+        document.getElementById('stat-active-market').innerText = formatMoney(activeMarketValue);
+        updateGain('stat-active-gain', activeGain);
+
+        // 更新售出區塊
+        document.getElementById('stat-sold-count').innerText = soldCount;
+        document.getElementById('stat-sold-revenue').innerText = formatMoney(soldTotalRevenue);
+        updateGain('stat-sold-gain', soldGain);
+
+        // 更新總結區塊
+        updateGain('stat-total', activeGain + soldGain);
     }
 
     async function openBulkUpdate() {
@@ -460,7 +491,7 @@
         const ctx = document.getElementById('priceChart').getContext('2d');
         if (currentChart) currentChart.destroy();
         
-        // 簡單的資料過濾邏輯
+        // 簡單資料過濾邏輯
         let filtered = history;
         const labels = filtered.map(h => h.date);
         const data = filtered.map(h => h.price);
