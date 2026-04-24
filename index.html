@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PTCG Pro 3.7 完整財務版</title>
+    <title>PTCG Pro 3.8 最終校正版</title>
     
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
     
@@ -37,18 +37,18 @@
         .stat-value.up { color: var(--up); }
         .stat-value.down { color: #50ff7b; }
 
-        /* 指定修改：累積盈虧區塊改為白色背景 */
+        /* 累積盈虧區塊 (白底) */
         .total-section { 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            background: #ffffff; /* 改為白色 */
+            background: #ffffff; 
             border: 2px solid var(--pika-yellow); 
             padding: 12px; 
             border-radius: 12px; 
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .total-label { color: var(--pika-dark); font-size: 14px; font-weight: 900; display: flex; align-items: center; gap: 5px; }
+        .total-label { color: var(--pika-dark); font-size: 14px; font-weight: 900; }
 
         /* 控制項 */
         .header { background: var(--pika-yellow); padding: 15px; border-bottom: 4px solid var(--pika-dark); position: sticky; top: 0; z-index: 100; border-radius: 0 0 15px 15px; }
@@ -58,7 +58,7 @@
         .sort-select { flex: 1; padding: 8px; border-radius: 12px; border: 2px solid var(--pika-dark); font-weight: 800; font-family: inherit; }
         .bulk-btn { background: var(--pika-brown); color: white; border: none; padding: 8px 12px; border-radius: 12px; font-size: 12px; font-weight: 900; cursor: pointer; }
         .filter-tabs { display: flex; gap: 5px; margin-top: 10px; }
-        .filter-tab { flex: 1; padding: 8px; border-radius: 15px; border: 2px solid var(--pika-dark); background: white; font-weight: 800; font-size: 12px; cursor: pointer; }
+        .filter-tab { flex: 1; padding: 8px; border-radius: 15px; border: 2px solid var(--pika-dark); background: white; font-weight: 800; font-size: 12px; cursor: pointer; text-align: center;}
         .filter-tab.active { background: var(--pika-dark); color: var(--pika-yellow); }
 
         /* 卡牌格線 */
@@ -68,13 +68,10 @@
         .grid-img-box img { width: 100%; height: 100%; object-fit: cover; }
         .grid-sn { font-size: 9px; background: var(--pika-dark); color: var(--pika-yellow); padding: 2px 6px; border-radius: 4px; position: absolute; top: 15px; left: 15px; font-weight: 800; }
         .grid-sold { position: absolute; top: 15px; right: 15px; background: rgba(38,28,20,0.85); color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
-        .up-text { color: var(--up); font-weight: 900; }
-        .down-text { color: var(--down); font-weight: 900; }
+        
+        /* 圖表容器樣式 */
+        .chart-wrapper { margin-top: 15px; background: #fff; border-radius: 12px; padding: 10px; border: 1px solid #ddd; height: 200px; }
 
-        .desktop-view .card-grid { grid-template-columns: repeat(4, 1fr); max-width: 1000px; margin: 0 auto; }
-        .desktop-view .dashboard, .desktop-view .header { max-width: 1000px; margin: 0 auto; }
-
-        /* 彈窗 */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
         .modal-container { background: white; width: 92%; max-width: 500px; border-radius: 20px; border: 4px solid var(--pika-dark); overflow: hidden; }
         .form-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 300; align-items: center; justify-content: center; }
@@ -83,6 +80,9 @@
         .input-item label { display: block; font-size: 12px; font-weight: 900; margin-bottom: 4px; }
         .input-item input, .input-item select, .input-item textarea { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; box-sizing: border-box; font-family: inherit; }
         .fab { position: fixed; bottom: 25px; right: 25px; background: var(--pika-yellow); border: 4px solid var(--pika-dark); color: var(--pika-dark); width: 64px; height: 64px; border-radius: 50%; font-size: 34px; display: flex; align-items: center; justify-content: center; font-weight: 900; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; }
+        
+        .desktop-view .card-grid { grid-template-columns: repeat(4, 1fr); max-width: 1000px; margin: 0 auto; }
+        .desktop-view .dashboard, .desktop-view .header { max-width: 1000px; margin: 0 auto; }
     </style>
 </head>
 <body class="mobile-view">
@@ -121,7 +121,7 @@
     </div>
     <div class="total-section">
         <div class="total-label">⚡ 所有卡牌累積盈虧</div>
-        <div class="stat-value" id="stat-total" style="font-size: 22px; color: var(--pika-dark);">--</div>
+        <div class="stat-value" id="stat-total" style="font-size: 22px;">--</div>
     </div>
 </div>
 
@@ -148,7 +148,7 @@
 <button class="fab" onclick="openForm()">＋</button>
 
 <div id="detailModal" class="modal">
-    <div class="modal-container"><div class="modal-content" id="detailContent" style="padding:20px; max-height:80vh; overflow-y:auto;"></div></div>
+    <div class="modal-container"><div class="modal-content" id="detailContent" style="padding:20px; max-height:85vh; overflow-y:auto;"></div></div>
 </div>
 
 <div id="formModal" class="form-modal">
@@ -163,7 +163,7 @@
         </div>
         <div class="input-item"><label>寶可夢名稱</label><input type="text" id="name"></div>
         <div class="input-item" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <div><label>卡牌序號</label><input type="text" id="sn"></div>
+            <div><label>序號</label><input type="text" id="sn"></div>
             <div><label>POP 張數</label><input type="number" id="popCount"></div>
         </div>
         <div class="input-item"><label>認證序號</label><input type="text" id="certId"></div>
@@ -175,7 +175,7 @@
             <div><label>買進價格</label><input type="number" id="buyPrice"></div>
             <div><label>行情時價</label><input type="number" id="currentPrice"></div>
         </div>
-        <div id="soldFields" style="background:#fff9e6; padding:10px; border-radius:10px; border:1px solid var(--pika-yellow); margin-bottom:12px;">
+        <div id="soldInputArea" style="background:#fff9e6; padding:10px; border-radius:10px; border:1px solid var(--pika-yellow); margin-bottom:12px;">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                 <div><label>售出日期</label><input type="date" id="sellDate"></div>
                 <div><label>💰 售出價格</label><input type="number" id="sellPrice"></div>
@@ -187,13 +187,13 @@
             </select>
         </div>
         <div class="input-item"><label>備註</label><textarea id="memo" rows="2"></textarea></div>
-        <button onclick="saveData()" style="width:100%; padding:15px; background:var(--pika-brown); color:white; border:none; border-radius:12px; font-weight:900;">確認儲存</button>
+        <button onclick="saveData()" style="width:100%; padding:15px; background:var(--pika-blue); color:white; border:none; border-radius:12px; font-weight:900;">確認儲存</button>
         <button onclick="closeForm()" style="width:100%; padding:10px; background:#eee; border:none; border-radius:10px; margin-top:10px;">取消</button>
     </div>
 </div>
 
 <script>
-    // --- 登入與原本邏輯不變 ---
+    // --- 基礎邏輯 (登入、Firebase) ---
     let currentPin = '';
     function pressKey(key) {
         if (key === 'back') currentPin = currentPin.slice(0, -1);
@@ -223,8 +223,9 @@
     let allCards = [];
     let currentFilter = 'all';
     let currentCardId = null;
+    let currentChart = null;
 
-    // 批量行情 (同名合併)
+    // --- 核心功能 (批量行情、計算、渲染) ---
     async function openBulkUpdate() {
         const activeCards = allCards.filter(c => !c.isSold);
         if (activeCards.length === 0) return Swal.fire("無持倉", "", "info");
@@ -241,7 +242,7 @@
             </div>
         `).join('');
         const { value: res } = await Swal.fire({
-            title: '批量同步時價',
+            title: '批量更新時價',
             html: `<div style="max-height:350px; overflow-y:auto; padding:10px;">${html}</div>`,
             showCancelButton: true,
             confirmButtonText: '全部更新',
@@ -259,12 +260,10 @@
                     batch.update(db.collection("cards").doc(id), { currentPrice: group.price, history: history, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
                 });
             });
-            await batch.commit();
-            Swal.fire("成功", "行情已同步", "success");
+            await batch.commit(); Swal.fire("成功", "行情已同步", "success");
         }
     }
 
-    // 數據計算
     function calculateFinancials() {
         let activeGain = 0, soldGain = 0;
         let activeCount = 0, activeInvest = 0, activeMarketValue = 0;
@@ -272,38 +271,26 @@
         allCards.forEach(c => {
             const buy = c.buyPrice || 0;
             if (c.isSold) {
-                soldCount++;
-                const sell = c.sellPrice || 0;
-                soldTotalRevenue += sell;
-                soldGain += (sell - buy);
+                soldCount++; soldTotalRevenue += (c.sellPrice || 0); soldGain += ((c.sellPrice || 0) - buy);
             } else {
-                activeCount++;
-                activeInvest += buy;
-                const current = c.currentPrice || 0;
-                activeMarketValue += current;
-                activeGain += (current - buy);
+                activeCount++; activeInvest += buy; activeMarketValue += (c.currentPrice || 0); activeGain += ((c.currentPrice || 0) - buy);
             }
         });
         const fmt = v => '$' + v.toLocaleString();
         document.getElementById('stat-active-count').innerText = activeCount;
         document.getElementById('stat-active-invest').innerText = fmt(activeInvest);
         document.getElementById('stat-active-market').innerText = fmt(activeMarketValue);
-        
         const actGainEl = document.getElementById('stat-active-gain');
         actGainEl.innerText = (activeGain >= 0 ? '+' : '') + activeGain.toLocaleString();
         actGainEl.className = 'stat-value ' + (activeGain >= 0 ? 'up' : 'down');
-
         document.getElementById('stat-sold-count').innerText = soldCount;
         document.getElementById('stat-sold-revenue').innerText = fmt(soldTotalRevenue);
-        
         const soldGainEl = document.getElementById('stat-sold-gain');
         soldGainEl.innerText = (soldGain >= 0 ? '+' : '') + soldGain.toLocaleString();
         soldGainEl.className = 'stat-value ' + (soldGain >= 0 ? 'up' : 'down');
-
         const total = activeGain + soldGain;
         const totalEl = document.getElementById('stat-total');
         totalEl.innerText = (total >= 0 ? '+' : '') + total.toLocaleString();
-        // 如果是正數顯示紅色(漲)，負數顯示綠色(降)
         totalEl.style.color = total >= 0 ? 'var(--up)' : 'var(--down)';
     }
 
@@ -341,79 +328,21 @@
         }).join('');
     }
 
-    function setFilter(type) {
-        currentFilter = type;
-        document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
-        document.getElementById(`filter-${type}`).classList.add('active');
-        renderGrid();
+    // --- 走勢圖渲染 ---
+    function renderChart(card) {
+        const ctx = document.getElementById('priceChart').getContext('2d');
+        if (currentChart) currentChart.destroy();
+        const history = card.history || [];
+        const labels = history.map(h => h.date);
+        const data = history.map(h => h.price);
+        currentChart = new Chart(ctx, {
+            type: 'line',
+            data: { labels, datasets: [{ label: '時價', data, borderColor: '#a04e06', backgroundColor: 'rgba(160, 78, 6, 0.1)', fill: true, tension: 0.3 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
     }
 
-    db.collection("cards").orderBy("updatedAt", "desc").onSnapshot(snap => {
-        allCards = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        calculateFinancials();
-        renderGrid();
-    });
-
-    function openForm(editData = null, isCopy = false) {
-        currentCardId = (editData && !isCopy) ? editData.id : null;
-        document.getElementById('formModal').style.display = 'flex';
-        document.getElementById('name').value = editData ? editData.name : "";
-        document.getElementById('sn').value = editData ? editData.sn : "";
-        document.getElementById('popCount').value = editData ? editData.popCount : "";
-        document.getElementById('certId').value = editData ? (isCopy ? "" : editData.certId) : "";
-        document.getElementById('source').value = editData ? editData.source : "";
-        document.getElementById('buyDate').value = editData ? editData.buyDate : "";
-        document.getElementById('buyPrice').value = editData ? editData.buyPrice : "";
-        document.getElementById('currentPrice').value = editData ? editData.currentPrice : "";
-        document.getElementById('sellDate').value = (editData && !isCopy) ? (editData.sellDate || "") : "";
-        document.getElementById('sellPrice').value = (editData && !isCopy) ? (editData.sellPrice || "") : "";
-        document.getElementById('isSold').value = (editData && !isCopy) ? String(editData.isSold) : "false";
-        document.getElementById('memo').value = editData ? editData.memo : "";
-        const preview = document.getElementById('previewImg');
-        const hint = document.getElementById('uploadHint');
-        if (editData && editData.imageUrl) { preview.src = editData.imageUrl; preview.style.display = 'block'; hint.style.display = 'none'; }
-        else { preview.style.display = 'none'; hint.style.display = 'block'; }
-    }
-    function closeForm() { document.getElementById('formModal').style.display = 'none'; }
-    function previewFile(input) {
-        const file = input.files[0];
-        if (file) { document.getElementById('previewImg').src = URL.createObjectURL(file); document.getElementById('previewImg').style.display = 'block'; document.getElementById('uploadHint').style.display = 'none'; }
-    }
-    async function saveData() {
-        const name = document.getElementById('name').value;
-        const file = document.getElementById('fileInput').files[0];
-        if (!name) return Swal.fire("提醒", "名稱必填", "warning");
-        Swal.fire({ title: '儲存中...', didOpen: () => Swal.showLoading() });
-        try {
-            let imageUrl = currentCardId ? (allCards.find(c => c.id === currentCardId).imageUrl || "") : "";
-            if (file) { const imgRef = storage.ref(`cards/${Date.now()}`); await imgRef.put(file); imageUrl = await imgRef.getDownloadURL(); }
-            const currentPrice = parseFloat(document.getElementById('currentPrice').value) || 0;
-            const data = {
-                name, imageUrl, sn: document.getElementById('sn').value,
-                popCount: parseInt(document.getElementById('popCount').value) || 0,
-                certId: document.getElementById('certId').value,
-                source: document.getElementById('source').value,
-                buyDate: document.getElementById('buyDate').value,
-                buyPrice: parseFloat(document.getElementById('buyPrice').value) || 0,
-                currentPrice: currentPrice,
-                sellDate: document.getElementById('sellDate').value,
-                sellPrice: parseFloat(document.getElementById('sellPrice').value) || 0,
-                isSold: document.getElementById('isSold').value === 'true',
-                memo: document.getElementById('memo').value,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
-            if (currentCardId) {
-                let history = allCards.find(c => c.id === currentCardId).history || [];
-                history.push({ date: new Date().toLocaleDateString(), price: currentPrice });
-                data.history = history;
-                await db.collection("cards").doc(currentCardId).update(data);
-            } else {
-                data.history = [{ date: new Date().toLocaleDateString(), price: currentPrice }];
-                await db.collection("cards").add(data);
-            }
-            Swal.fire("成功", "已儲存", "success"); closeForm();
-        } catch (e) { Swal.fire("錯誤", e.message, "error"); }
-    }
+    // --- 詳細資訊、存檔 ---
     function showDetail(id) {
         const card = allCards.find(c => c.id === id);
         if (!card) return;
@@ -436,6 +365,7 @@
                     <small>累積損益:</small><br><b class="${diff>=0?'up-text':'down-text'}">$${diff.toLocaleString()} (${percent}%)</b>
                 </div>
             </div>
+            <div class="chart-wrapper"><canvas id="priceChart"></canvas></div>
             <div style="display:flex; gap:5px; margin-top:15px;">
                 <button onclick="openForm(allCards.find(c=>c.id=='${id}'), true)" style="flex:1; padding:10px; border-radius:8px; background:var(--pika-yellow); border:none; font-weight:bold;">複製</button>
                 <button onclick="openForm(allCards.find(c=>c.id=='${id}'))" style="flex:1; padding:10px; border-radius:8px; background:var(--pika-dark); color:white; border:none; font-weight:bold;">修改</button>
@@ -443,6 +373,65 @@
             </div>
         `;
         document.getElementById('detailModal').style.display = 'flex';
+        setTimeout(() => renderChart(card), 100);
+    }
+
+    async function saveData() {
+        const name = document.getElementById('name').value;
+        if (!name) return Swal.fire("提醒", "名稱必填", "warning");
+        Swal.fire({ title: '儲存中...', didOpen: () => Swal.showLoading() });
+        try {
+            const file = document.getElementById('fileInput').files[0];
+            let imageUrl = currentCardId ? (allCards.find(c => c.id === currentCardId).imageUrl || "") : "";
+            if (file) { const imgRef = storage.ref(`cards/${Date.now()}`); await imgRef.put(file); imageUrl = await imgRef.getDownloadURL(); }
+            const currentPrice = parseFloat(document.getElementById('currentPrice').value) || 0;
+            const data = {
+                name, imageUrl, sn: document.getElementById('sn').value, popCount: parseInt(document.getElementById('popCount').value) || 0,
+                certId: document.getElementById('certId').value, source: document.getElementById('source').value, buyDate: document.getElementById('buyDate').value,
+                buyPrice: parseFloat(document.getElementById('buyPrice').value) || 0, currentPrice: currentPrice, sellDate: document.getElementById('sellDate').value,
+                sellPrice: parseFloat(document.getElementById('sellPrice').value) || 0, isSold: document.getElementById('isSold').value === 'true',
+                memo: document.getElementById('memo').value, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            if (currentCardId) {
+                let history = allCards.find(c => c.id === currentCardId).history || [];
+                history.push({ date: new Date().toLocaleDateString(), price: currentPrice });
+                data.history = history; await db.collection("cards").doc(currentCardId).update(data);
+            } else {
+                data.history = [{ date: new Date().toLocaleDateString(), price: currentPrice }];
+                await db.collection("cards").add(data);
+            }
+            Swal.fire("成功", "已儲存", "success"); document.getElementById('formModal').style.display = 'none';
+        } catch (e) { Swal.fire("錯誤", e.message, "error"); }
+    }
+
+    // --- 初始化與事件 ---
+    db.collection("cards").orderBy("updatedAt", "desc").onSnapshot(snap => {
+        allCards = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        calculateFinancials(); renderGrid();
+    });
+    function setFilter(type) {
+        currentFilter = type;
+        document.querySelectorAll('.filter-tab').forEach(b => b.classList.toggle('active', b.id === `filter-${type}`));
+        renderGrid();
+    }
+    function openForm(editData = null, isCopy = false) {
+        currentCardId = (editData && !isCopy) ? editData.id : null;
+        document.getElementById('formModal').style.display = 'flex';
+        document.getElementById('name').value = editData ? editData.name : "";
+        document.getElementById('sn').value = editData ? editData.sn : "";
+        document.getElementById('popCount').value = editData ? editData.popCount : "";
+        document.getElementById('buyPrice').value = editData ? editData.buyPrice : "";
+        document.getElementById('currentPrice').value = editData ? editData.currentPrice : "";
+        document.getElementById('isSold').value = (editData && !isCopy) ? String(editData.isSold) : "false";
+        const preview = document.getElementById('previewImg');
+        const hint = document.getElementById('uploadHint');
+        if (editData && editData.imageUrl) { preview.src = editData.imageUrl; preview.style.display = 'block'; hint.style.display = 'none'; }
+        else { preview.style.display = 'none'; hint.style.display = 'block'; }
+    }
+    function closeForm() { document.getElementById('formModal').style.display = 'none'; }
+    function previewFile(input) {
+        const file = input.files[0];
+        if (file) { document.getElementById('previewImg').src = URL.createObjectURL(file); document.getElementById('previewImg').style.display = 'block'; document.getElementById('uploadHint').style.display = 'none'; }
     }
     async function deleteCard(id) { if ((await Swal.fire({ title: '確定刪除?', showCancelButton: true })).isConfirmed) { await db.collection("cards").doc(id).delete(); document.getElementById('detailModal').style.display = 'none'; } }
 </script>
