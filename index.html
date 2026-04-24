@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PTCG Pro 3.8 最終校正版</title>
+    <title>PTCG Pro 3.9 全功能回歸版</title>
     
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
     
@@ -30,24 +30,14 @@
         .dash-section { background: rgba(255,255,255,0.08); border-radius: 12px; padding: 12px; border: 1px solid rgba(255,255,255,0.15); }
         .dash-section-title { font-size: 12px; color: var(--pika-yellow); font-weight: 900; margin-bottom: 8px; border-bottom: 1px solid rgba(243,207,63,0.3); padding-bottom: 4px; }
         .dash-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-        .dash-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
         .stat-item { display: flex; flex-direction: column; }
         .stat-label { font-size: 10px; color: #bbb; font-weight: bold; }
         .stat-value { font-size: 15px; font-weight: 900; }
         .stat-value.up { color: var(--up); }
         .stat-value.down { color: #50ff7b; }
 
-        /* 累積盈虧區塊 (白底) */
-        .total-section { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            background: #ffffff; 
-            border: 2px solid var(--pika-yellow); 
-            padding: 12px; 
-            border-radius: 12px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
+        /* 累積盈虧區塊 */
+        .total-section { display: flex; justify-content: space-between; align-items: center; background: #ffffff; border: 2px solid var(--pika-yellow); padding: 12px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .total-label { color: var(--pika-dark); font-size: 14px; font-weight: 900; }
 
         /* 控制項 */
@@ -61,6 +51,11 @@
         .filter-tab { flex: 1; padding: 8px; border-radius: 15px; border: 2px solid var(--pika-dark); background: white; font-weight: 800; font-size: 12px; cursor: pointer; text-align: center;}
         .filter-tab.active { background: var(--pika-dark); color: var(--pika-yellow); }
 
+        /* 線圖時間軸切換鈕樣式 */
+        .chart-tabs { display: flex; background: #f0f0f0; border-radius: 8px; overflow: hidden; border: 1px solid #ccc; margin-bottom: 5px; }
+        .chart-tab { flex: 1; padding: 4px; font-size: 11px; border: none; background: transparent; cursor: pointer; font-weight: 800; }
+        .chart-tab.active { background: var(--pika-brown); color: white; }
+
         /* 卡牌格線 */
         .card-grid { display: grid; gap: 12px; padding: 15px; grid-template-columns: repeat(2, 1fr); }
         .grid-item { background: white; border-radius: 16px; padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); position: relative; border: 2px solid #eee; cursor: pointer; }
@@ -69,9 +64,10 @@
         .grid-sn { font-size: 9px; background: var(--pika-dark); color: var(--pika-yellow); padding: 2px 6px; border-radius: 4px; position: absolute; top: 15px; left: 15px; font-weight: 800; }
         .grid-sold { position: absolute; top: 15px; right: 15px; background: rgba(38,28,20,0.85); color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
         
-        /* 圖表容器樣式 */
-        .chart-wrapper { margin-top: 15px; background: #fff; border-radius: 12px; padding: 10px; border: 1px solid #ddd; height: 200px; }
+        .desktop-view .card-grid { grid-template-columns: repeat(4, 1fr); max-width: 1000px; margin: 0 auto; }
+        .desktop-view .dashboard, .desktop-view .header { max-width: 1000px; margin: 0 auto; }
 
+        /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
         .modal-container { background: white; width: 92%; max-width: 500px; border-radius: 20px; border: 4px solid var(--pika-dark); overflow: hidden; }
         .form-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 300; align-items: center; justify-content: center; }
@@ -80,9 +76,6 @@
         .input-item label { display: block; font-size: 12px; font-weight: 900; margin-bottom: 4px; }
         .input-item input, .input-item select, .input-item textarea { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; box-sizing: border-box; font-family: inherit; }
         .fab { position: fixed; bottom: 25px; right: 25px; background: var(--pika-yellow); border: 4px solid var(--pika-dark); color: var(--pika-dark); width: 64px; height: 64px; border-radius: 50%; font-size: 34px; display: flex; align-items: center; justify-content: center; font-weight: 900; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; }
-        
-        .desktop-view .card-grid { grid-template-columns: repeat(4, 1fr); max-width: 1000px; margin: 0 auto; }
-        .desktop-view .dashboard, .desktop-view .header { max-width: 1000px; margin: 0 auto; }
     </style>
 </head>
 <body class="mobile-view">
@@ -113,10 +106,10 @@
     </div>
     <div class="dash-section">
         <div class="dash-section-title">🤝 售出統計 (已實現)</div>
-        <div class="dash-grid-3">
+        <div class="dash-grid" style="grid-template-columns: repeat(3, 1fr);">
             <div class="stat-item"><div class="stat-label">賣出張數</div><div class="stat-value" id="stat-sold-count">0</div></div>
             <div class="stat-item"><div class="stat-label">賣出總額</div><div class="stat-value" id="stat-sold-revenue">$0</div></div>
-            <div class="stat-item"><div class="stat-label">已實現損益</div><div class="stat-value" id="stat-sold-gain">0</div></div>
+            <div class="stat-item"><div class="stat-label">實現損益</div><div class="stat-value" id="stat-sold-gain">0</div></div>
         </div>
     </div>
     <div class="total-section">
@@ -193,7 +186,7 @@
 </div>
 
 <script>
-    // --- 基礎邏輯 (登入、Firebase) ---
+    // --- 密碼邏輯 ---
     let currentPin = '';
     function pressKey(key) {
         if (key === 'back') currentPin = currentPin.slice(0, -1);
@@ -225,7 +218,7 @@
     let currentCardId = null;
     let currentChart = null;
 
-    // --- 核心功能 (批量行情、計算、渲染) ---
+    // --- 同名合併批量修改 ---
     async function openBulkUpdate() {
         const activeCards = allCards.filter(c => !c.isSold);
         if (activeCards.length === 0) return Swal.fire("無持倉", "", "info");
@@ -242,14 +235,13 @@
             </div>
         `).join('');
         const { value: res } = await Swal.fire({
-            title: '批量更新時價',
+            title: '批量同步時價',
             html: `<div style="max-height:350px; overflow-y:auto; padding:10px;">${html}</div>`,
             showCancelButton: true,
             confirmButtonText: '全部更新',
             preConfirm: () => Array.from(document.querySelectorAll('.bulk-input')).map(i => ({ ids: i.dataset.ids.split(','), price: parseFloat(i.value) || 0 }))
         });
         if (res) {
-            Swal.fire({ title: '同步中...', didOpen: () => Swal.showLoading() });
             const today = new Date().toLocaleDateString();
             const batch = db.batch();
             res.forEach(group => {
@@ -264,34 +256,27 @@
         }
     }
 
+    // --- 財務計算 ---
     function calculateFinancials() {
-        let activeGain = 0, soldGain = 0;
-        let activeCount = 0, activeInvest = 0, activeMarketValue = 0;
-        let soldCount = 0, soldTotalRevenue = 0;
+        let activeGain = 0, soldGain = 0, activeCount = 0, activeInvest = 0, activeMarketValue = 0, soldCount = 0, soldTotalRevenue = 0;
         allCards.forEach(c => {
             const buy = c.buyPrice || 0;
-            if (c.isSold) {
-                soldCount++; soldTotalRevenue += (c.sellPrice || 0); soldGain += ((c.sellPrice || 0) - buy);
-            } else {
-                activeCount++; activeInvest += buy; activeMarketValue += (c.currentPrice || 0); activeGain += ((c.currentPrice || 0) - buy);
-            }
+            if (c.isSold) { soldCount++; soldTotalRevenue += (c.sellPrice || 0); soldGain += ((c.sellPrice || 0) - buy); }
+            else { activeCount++; activeInvest += buy; activeMarketValue += (c.currentPrice || 0); activeGain += ((c.currentPrice || 0) - buy); }
         });
         const fmt = v => '$' + v.toLocaleString();
         document.getElementById('stat-active-count').innerText = activeCount;
         document.getElementById('stat-active-invest').innerText = fmt(activeInvest);
         document.getElementById('stat-active-market').innerText = fmt(activeMarketValue);
-        const actGainEl = document.getElementById('stat-active-gain');
-        actGainEl.innerText = (activeGain >= 0 ? '+' : '') + activeGain.toLocaleString();
-        actGainEl.className = 'stat-value ' + (activeGain >= 0 ? 'up' : 'down');
+        document.getElementById('stat-active-gain').innerText = (activeGain >= 0 ? '+' : '') + activeGain.toLocaleString();
+        document.getElementById('stat-active-gain').style.color = activeGain >= 0 ? 'var(--up)' : 'var(--down)';
         document.getElementById('stat-sold-count').innerText = soldCount;
         document.getElementById('stat-sold-revenue').innerText = fmt(soldTotalRevenue);
-        const soldGainEl = document.getElementById('stat-sold-gain');
-        soldGainEl.innerText = (soldGain >= 0 ? '+' : '') + soldGain.toLocaleString();
-        soldGainEl.className = 'stat-value ' + (soldGain >= 0 ? 'up' : 'down');
+        document.getElementById('stat-sold-gain').innerText = (soldGain >= 0 ? '+' : '') + soldGain.toLocaleString();
+        document.getElementById('stat-sold-gain').style.color = soldGain >= 0 ? 'var(--up)' : 'var(--down)';
         const total = activeGain + soldGain;
-        const totalEl = document.getElementById('stat-total');
-        totalEl.innerText = (total >= 0 ? '+' : '') + total.toLocaleString();
-        totalEl.style.color = total >= 0 ? 'var(--up)' : 'var(--down)';
+        document.getElementById('stat-total').innerText = (total >= 0 ? '+' : '') + total.toLocaleString();
+        document.getElementById('stat-total').style.color = total >= 0 ? 'var(--up)' : 'var(--down)';
     }
 
     function renderGrid() {
@@ -314,7 +299,6 @@
             const buy = c.buyPrice || 0;
             const current = c.isSold ? (c.sellPrice || 0) : (c.currentPrice || 0);
             const diff = current - buy;
-            const percent = buy ? ((diff/buy)*100).toFixed(1) : 0;
             return `
                 <div class="grid-item" onclick="showDetail('${c.id}')">
                     <div class="grid-sn">#${c.sn}</div>
@@ -322,27 +306,49 @@
                     <div class="grid-img-box"><img src="${c.imageUrl || 'https://via.placeholder.com/150'}"></div>
                     <div style="font-weight:900; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${c.name}</div>
                     <div style="font-size:11px; color:#888;">成本: $${buy.toLocaleString()}</div>
-                    <div class="${diff>=0?'up-text':'down-text'}">$${current.toLocaleString()} (${diff>=0?'+':''}${percent}%)</div>
+                    <div style="color:${diff>=0?'var(--up)':'var(--down)'}; font-weight:bold;">$${current.toLocaleString()}</div>
                 </div>
             `;
         }).join('');
     }
 
-    // --- 走勢圖渲染 ---
-    function renderChart(card) {
+    // --- 走勢圖過濾 (週/月/季/年) ---
+    function getFilteredHistory(history, type) {
+        if (!history || history.length === 0) return [];
+        const now = new Date();
+        let days = 0;
+        if (type === 'week') days = 7;
+        else if (type === 'month') days = 30;
+        else if (type === 'quarter') days = 90;
+        else if (type === 'year') days = 365;
+        else return history; // 'all'
+
+        return history.filter(h => {
+            const hDate = new Date(h.date);
+            const diffTime = Math.abs(now - hDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays <= days;
+        });
+    }
+
+    function renderChart(card, type = 'all') {
         const ctx = document.getElementById('priceChart').getContext('2d');
         if (currentChart) currentChart.destroy();
-        const history = card.history || [];
-        const labels = history.map(h => h.date);
-        const data = history.map(h => h.price);
+        const filtered = getFilteredHistory(card.history, type);
+        const labels = filtered.map(h => h.date);
+        const data = filtered.map(h => h.price);
+        
+        // 更新按鈕狀態
+        document.querySelectorAll('.chart-tab').forEach(b => b.classList.toggle('active', b.dataset.type === type));
+
         currentChart = new Chart(ctx, {
             type: 'line',
-            data: { labels, datasets: [{ label: '時價', data, borderColor: '#a04e06', backgroundColor: 'rgba(160, 78, 6, 0.1)', fill: true, tension: 0.3 }] },
+            data: { labels, datasets: [{ data, borderColor: '#a04e06', backgroundColor: 'rgba(160, 78, 6, 0.1)', fill: true, tension: 0.3 }] },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
         });
     }
 
-    // --- 詳細資訊、存檔 ---
+    // --- 詳細資訊 (包含購入管道與時間軸切換) ---
     function showDetail(id) {
         const card = allCards.find(c => c.id === id);
         if (!card) return;
@@ -350,22 +356,35 @@
         const current = card.isSold ? (card.sellPrice || 0) : (card.currentPrice || 0);
         const diff = current - buy;
         const percent = buy ? ((diff/buy)*100).toFixed(1) : 0;
+
         document.getElementById('detailContent').innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <b style="font-size:18px;">${card.name}</b>
                 <button onclick="document.getElementById('detailModal').style.display='none'" style="border:none; background:none; font-size:24px;">×</button>
             </div>
             <img src="${card.imageUrl || 'https://via.placeholder.com/300'}" style="width:100%; border-radius:12px; margin-bottom:15px; border:2px solid #ccc;">
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:14px;">
-                <div><small>序號:</small><br><b>#${card.sn}</b></div>
-                <div><small>POP:</small><br><b>${card.popCount || 0}</b></div>
-                <div><small>買進:</small><br><b>$${buy.toLocaleString()}</b></div>
-                <div><small>${card.isSold?'售出':'時價'}:</small><br><b class="${diff>=0?'up-text':'down-text'}">$${current.toLocaleString()}</b></div>
-                <div style="grid-column:span 2; background:#f0f0f0; padding:8px; border-radius:8px;">
-                    <small>累積損益:</small><br><b class="${diff>=0?'up-text':'down-text'}">$${diff.toLocaleString()} (${percent}%)</b>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:13px;">
+                <div><small>序號:</small> <b>#${card.sn}</b></div>
+                <div><small>POP:</small> <b>${card.popCount || 0}</b></div>
+                <div><small>購入管道:</small> <b>${card.source || '-'}</b></div>
+                <div><small>購入日期:</small> <b>${card.buyDate || '-'}</b></div>
+                <div><small>買進價格:</small> <b>$${buy.toLocaleString()}</b></div>
+                <div><small>${card.isSold?'售出價格':'行情時價'}:</small> <b style="color:${diff>=0?'var(--up)':'var(--down)'}">$${current.toLocaleString()}</b></div>
+                <div style="grid-column:span 2; background:#f5f5f5; padding:8px; border-radius:8px;">
+                    累積損益: <b style="color:${diff>=0?'var(--up)':'var(--down)'}">$${diff.toLocaleString()} (${percent}%)</b>
                 </div>
             </div>
-            <div class="chart-wrapper"><canvas id="priceChart"></canvas></div>
+            <div style="margin-top:15px;">
+                <div class="chart-tabs">
+                    <button class="chart-tab active" data-type="all" onclick="renderChart(allCards.find(c=>c.id=='${id}'), 'all')">全部</button>
+                    <button class="chart-tab" data-type="week" onclick="renderChart(allCards.find(c=>c.id=='${id}'), 'week')">週</button>
+                    <button class="chart-tab" data-type="month" onclick="renderChart(allCards.find(c=>c.id=='${id}'), 'month')">月</button>
+                    <button class="chart-tab" data-type="quarter" onclick="renderChart(allCards.find(c=>c.id=='${id}'), 'quarter')">季</button>
+                    <button class="chart-tab" data-type="year" onclick="renderChart(allCards.find(c=>c.id=='${id}'), 'year')">年</button>
+                </div>
+                <div style="height:180px; background:#fff; border:1px solid #ddd; border-radius:10px; padding:5px;"><canvas id="priceChart"></canvas></div>
+            </div>
+            <p style="font-size:12px; color:#666; margin-top:10px;">備註: ${card.memo || '無'}</p>
             <div style="display:flex; gap:5px; margin-top:15px;">
                 <button onclick="openForm(allCards.find(c=>c.id=='${id}'), true)" style="flex:1; padding:10px; border-radius:8px; background:var(--pika-yellow); border:none; font-weight:bold;">複製</button>
                 <button onclick="openForm(allCards.find(c=>c.id=='${id}'))" style="flex:1; padding:10px; border-radius:8px; background:var(--pika-dark); color:white; border:none; font-weight:bold;">修改</button>
@@ -373,9 +392,10 @@
             </div>
         `;
         document.getElementById('detailModal').style.display = 'flex';
-        setTimeout(() => renderChart(card), 100);
+        setTimeout(() => renderChart(card, 'all'), 100);
     }
 
+    // --- 存檔與初始化 ---
     async function saveData() {
         const name = document.getElementById('name').value;
         if (!name) return Swal.fire("提醒", "名稱必填", "warning");
@@ -404,7 +424,6 @@
         } catch (e) { Swal.fire("錯誤", e.message, "error"); }
     }
 
-    // --- 初始化與事件 ---
     db.collection("cards").orderBy("updatedAt", "desc").onSnapshot(snap => {
         allCards = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         calculateFinancials(); renderGrid();
@@ -420,8 +439,11 @@
         document.getElementById('name').value = editData ? editData.name : "";
         document.getElementById('sn').value = editData ? editData.sn : "";
         document.getElementById('popCount').value = editData ? editData.popCount : "";
+        document.getElementById('source').value = editData ? editData.source : "";
+        document.getElementById('buyDate').value = editData ? editData.buyDate : "";
         document.getElementById('buyPrice').value = editData ? editData.buyPrice : "";
         document.getElementById('currentPrice').value = editData ? editData.currentPrice : "";
+        document.getElementById('memo').value = editData ? editData.memo : "";
         document.getElementById('isSold').value = (editData && !isCopy) ? String(editData.isSold) : "false";
         const preview = document.getElementById('previewImg');
         const hint = document.getElementById('uploadHint');
