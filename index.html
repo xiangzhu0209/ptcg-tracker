@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PTCG Pro 3.5 專業財務版</title>
+    <title>PTCG Pro 3.6 完整財務版</title>
     
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
     
@@ -14,66 +14,60 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-        :root { 
-            --pika-yellow: #f3cf3f; 
-            --pika-dark: #261c14; 
-            --pika-brown: #a04e06; 
-            --pika-blue: #2468b1;
-            --pika-red: #eb4034;
-            --up: #eb4034; 
-            --down: #1fa139; 
-        }
+        :root { --pika-yellow: #f3cf3f; --pika-dark: #261c14; --pika-brown: #a04e06; --pika-blue: #2468b1; --up: #eb4034; --down: #1fa139; }
         body { font-family: 'Nunito', 'M PLUS Rounded 1c', sans-serif; background: #f8f8f8; margin: 0; padding-bottom: 100px; color: var(--pika-dark); }
         
-        /* 登入畫面 */
+        /* 登入 */
         #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--pika-yellow); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .pin-dots { display: flex; gap: 15px; margin-bottom: 30px; }
         .dot { width: 18px; height: 18px; border-radius: 50%; border: 3px solid var(--pika-dark); background: transparent; transition: 0.2s; }
         .dot.filled { background: var(--pika-dark); }
         .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
-        .numpad button { width: 75px; height: 75px; border-radius: 50%; background: white; color: var(--pika-blue); font-size: 32px; font-weight: 900; border: 3px solid var(--pika-dark); box-shadow: 0 5px 0 var(--pika-dark); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .numpad button { width: 75px; height: 75px; border-radius: 50%; background: white; color: var(--pika-yellow); font-size: 32px; font-weight: 900; border: 3px solid var(--pika-dark); box-shadow: 0 5px 0 var(--pika-dark); -webkit-text-stroke: 1px var(--pika-dark); cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-        /* 財務儀表板 */
-        .dashboard { background: var(--pika-dark); color: white; padding: 15px; border-radius: 0 0 20px 20px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        /* 儀表板 - 完整保留所有數據欄位 */
+        .dashboard { background: var(--pika-dark); color: white; padding: 15px; border-radius: 0 0 20px 20px; display: flex; flex-direction: column; gap: 10px; }
         .dash-section { background: rgba(255,255,255,0.08); border-radius: 12px; padding: 12px; border: 1px solid rgba(255,255,255,0.15); }
-        .dash-section-title { font-size: 13px; color: var(--pika-yellow); font-weight: 900; margin-bottom: 8px; border-bottom: 1px solid rgba(243,207,63,0.3); padding-bottom: 4px; }
+        .dash-section-title { font-size: 12px; color: var(--pika-yellow); font-weight: 900; margin-bottom: 8px; border-bottom: 1px solid rgba(243,207,63,0.3); padding-bottom: 4px; }
         .dash-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .dash-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
         .stat-item { display: flex; flex-direction: column; }
-        .stat-label { font-size: 11px; color: #bbb; }
-        .stat-value { font-size: 16px; font-weight: 900; }
-        .total-section { display: flex; justify-content: space-between; align-items: center; background: rgba(243, 207, 63, 0.15); border: 1px solid var(--pika-yellow); padding: 10px; border-radius: 10px; }
+        .stat-label { font-size: 10px; color: #bbb; font-weight: bold; }
+        .stat-value { font-size: 15px; font-weight: 900; }
+        .stat-value.up { color: var(--up); }
+        .stat-value.down { color: #50ff7b; }
+        .total-section { display: flex; justify-content: space-between; align-items: center; background: rgba(243, 207, 63, 0.15); border: 1.5px solid var(--pika-yellow); padding: 10px; border-radius: 10px; }
 
-        /* Header */
+        /* Header & Controls */
         .header { background: var(--pika-yellow); padding: 15px; border-bottom: 4px solid var(--pika-dark); position: sticky; top: 0; z-index: 100; border-radius: 0 0 15px 15px; }
-        .search-bar { background: white; border-radius: 20px; padding: 10px 15px; border: 2px solid var(--pika-dark); display: flex; align-items: center; }
+        .search-bar { background: white; border-radius: 20px; padding: 8px 15px; border: 2px solid var(--pika-dark); display: flex; align-items: center; margin-bottom: 10px; }
         .search-bar input { border: none; outline: none; width: 100%; font-size: 16px; font-weight: bold; font-family: inherit; }
-        
-        .control-row { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
-        .sort-select { flex: 1; padding: 8px; border-radius: 15px; border: 2px solid var(--pika-dark); font-weight: 800; font-family: inherit; font-size: 13px; }
-        .bulk-btn { background: var(--pika-red); color: white; border: 2px solid var(--pika-dark); padding: 8px 15px; border-radius: 15px; font-size: 12px; font-weight: 900; cursor: pointer; }
+        .control-row { display: flex; gap: 8px; align-items: center; }
+        .sort-select { flex: 1; padding: 8px; border-radius: 12px; border: 2px solid var(--pika-dark); font-weight: 800; font-family: inherit; }
+        .bulk-btn { background: var(--pika-brown); color: white; border: none; padding: 8px 12px; border-radius: 12px; font-size: 12px; font-weight: 900; cursor: pointer; }
+        .filter-tabs { display: flex; gap: 5px; margin-top: 10px; }
+        .filter-tab { flex: 1; padding: 8px; border-radius: 15px; border: 2px solid var(--pika-dark); background: white; font-weight: 800; font-size: 12px; cursor: pointer; }
+        .filter-tab.active { background: var(--pika-dark); color: var(--pika-yellow); }
 
-        /* 卡牌方格 */
+        /* Grid */
         .card-grid { display: grid; gap: 12px; padding: 15px; grid-template-columns: repeat(2, 1fr); }
-        .grid-item { background: white; border-radius: 16px; padding: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); position: relative; border: 2px solid #eee; cursor: pointer; transition: transform 0.1s; }
-        .grid-item:active { transform: scale(0.97); }
+        .grid-item { background: white; border-radius: 16px; padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); position: relative; border: 2px solid #eee; cursor: pointer; }
         .grid-img-box { width: 100%; height: 160px; border-radius: 10px; background: #eee; overflow: hidden; margin-bottom: 8px; }
         .grid-img-box img { width: 100%; height: 100%; object-fit: cover; }
-        .grid-sn { font-size: 10px; background: var(--pika-blue); color: white; padding: 2px 6px; border-radius: 4px; position: absolute; top: 18px; left: 18px; font-weight: 800; }
-        .grid-sold { position: absolute; top: 18px; right: 18px; background: rgba(38,28,20,0.85); color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        .grid-sn { font-size: 9px; background: var(--pika-dark); color: var(--pika-yellow); padding: 2px 6px; border-radius: 4px; position: absolute; top: 15px; left: 15px; font-weight: 800; }
+        .grid-sold { position: absolute; top: 15px; right: 15px; background: rgba(38,28,20,0.85); color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
 
-        .up-text { color: var(--up); font-weight: 900; }
-        .down-text { color: var(--down); font-weight: 900; }
-
+        /* 桌面版 */
         .desktop-view .card-grid { grid-template-columns: repeat(4, 1fr); max-width: 1000px; margin: 0 auto; }
         .desktop-view .dashboard, .desktop-view .header { max-width: 1000px; margin: 0 auto; }
 
-        /* 其他 Modal 樣式保持原本 ... */
+        /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
         .modal-container { background: white; width: 92%; max-width: 500px; border-radius: 20px; border: 4px solid var(--pika-dark); overflow: hidden; }
         .form-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 300; align-items: center; justify-content: center; }
-        .form-box { background: white; width: 92%; max-width: 500px; max-height: 90%; border-radius: 20px; padding: 25px; overflow-y: auto; border: 4px solid var(--pika-dark); }
-        .input-item { margin-bottom: 15px; }
-        .input-item label { display: block; font-size: 13px; font-weight: 900; margin-bottom: 5px; }
+        .form-box { background: white; width: 92%; max-width: 500px; max-height: 90%; border-radius: 20px; padding: 20px; overflow-y: auto; border: 4px solid var(--pika-dark); }
+        .input-item { margin-bottom: 12px; }
+        .input-item label { display: block; font-size: 12px; font-weight: 900; margin-bottom: 4px; }
         .input-item input, .input-item select, .input-item textarea { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; box-sizing: border-box; font-family: inherit; }
         .fab { position: fixed; bottom: 25px; right: 25px; background: var(--pika-yellow); border: 4px solid var(--pika-dark); color: var(--pika-dark); width: 64px; height: 64px; border-radius: 50%; font-size: 34px; display: flex; align-items: center; justify-content: center; font-weight: 900; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; }
     </style>
@@ -81,7 +75,7 @@
 <body class="mobile-view">
 
 <div id="loginScreen">
-    <div style="font-size: 24px; font-weight: 900; margin-bottom: 20px; color: var(--pika-brown)">⚡ PTCG 帳務管理 Pro</div>
+    <div style="font-size: 24px; font-weight: 900; margin-bottom: 20px;">⚡ PTCG 帳務管理</div>
     <div class="pin-dots">
         <span class="dot" id="dot-0"></span><span class="dot" id="dot-1"></span>
         <span class="dot" id="dot-2"></span><span class="dot" id="dot-3"></span>
@@ -98,12 +92,22 @@
     <div class="dash-section">
         <div class="dash-section-title">📦 持倉統計 (未實現)</div>
         <div class="dash-grid">
+            <div class="stat-item"><div class="stat-label">持有張數</div><div class="stat-value" id="stat-active-count">0</div></div>
+            <div class="stat-item"><div class="stat-label">投入金額</div><div class="stat-value" id="stat-active-invest">$0</div></div>
             <div class="stat-item"><div class="stat-label">目前市值</div><div class="stat-value" id="stat-active-market">$0</div></div>
             <div class="stat-item"><div class="stat-label">持倉損益</div><div class="stat-value" id="stat-active-gain">0</div></div>
         </div>
     </div>
+    <div class="dash-section">
+        <div class="dash-section-title">🤝 售出統計 (已實現)</div>
+        <div class="dash-grid-3">
+            <div class="stat-item"><div class="stat-label">賣出張數</div><div class="stat-value" id="stat-sold-count">0</div></div>
+            <div class="stat-item"><div class="stat-label">賣出總額</div><div class="stat-value" id="stat-sold-revenue">$0</div></div>
+            <div class="stat-item"><div class="stat-label">已實現損益</div><div class="stat-value" id="stat-sold-gain">0</div></div>
+        </div>
+    </div>
     <div class="dash-section total-section">
-        <div class="stat-label" style="color:var(--pika-dark); font-size:14px; font-weight: 900;">⚡ 累積盈虧</div>
+        <div class="stat-label" style="color:var(--pika-dark); font-size:14px; font-weight: 900;">⚡ 所有卡牌累積盈虧</div>
         <div class="stat-value" id="stat-total" style="font-size: 22px; color: var(--pika-dark);">--</div>
     </div>
 </div>
@@ -120,10 +124,10 @@
         </select>
         <button class="bulk-btn" onclick="openBulkUpdate()">批量行情</button>
     </div>
-    <div style="display: flex; gap: 8px; margin-top: 10px;">
-        <button class="filter-tab active" id="filter-all" onclick="setFilter('all')" style="flex:1; padding:8px; border-radius:15px; border:2px solid var(--pika-dark); background:white; font-weight:800;">全部</button>
-        <button class="filter-tab" id="filter-active" onclick="setFilter('active')" style="flex:1; padding:8px; border-radius:15px; border:2px solid var(--pika-dark); background:white; font-weight:800;">持倉</button>
-        <button class="filter-tab" id="filter-sold" onclick="setFilter('sold')" style="flex:1; padding:8px; border-radius:15px; border:2px solid var(--pika-dark); background:white; font-weight:800;">售出</button>
+    <div class="filter-tabs">
+        <button class="filter-tab active" id="filter-all" onclick="setFilter('all')">全部</button>
+        <button class="filter-tab" id="filter-active" onclick="setFilter('active')">持倉</button>
+        <button class="filter-tab" id="filter-sold" onclick="setFilter('sold')">售出</button>
     </div>
 </div>
 
@@ -131,14 +135,14 @@
 <button class="fab" onclick="openForm()">＋</button>
 
 <div id="detailModal" class="modal">
-    <div class="modal-container"><div class="modal-content" id="detailContent"></div></div>
+    <div class="modal-container"><div class="modal-content" id="detailContent" style="padding:20px; max-height:80vh; overflow-y:auto;"></div></div>
 </div>
 
 <div id="formModal" class="form-modal">
     <div class="form-box">
         <h3 id="formTitle">錄入卡牌</h3>
         <div class="input-item">
-            <div onclick="document.getElementById('fileInput').click()" style="height:150px; border:3px dashed var(--pika-brown); border-radius:15px; display:flex; align-items:center; justify-content:center; overflow:hidden; background:#fafafa; cursor:pointer;">
+            <div onclick="document.getElementById('fileInput').click()" style="height:150px; border:3px dashed var(--pika-brown); border-radius:15px; display:flex; align-items:center; justify-content:center; background:#fafafa; cursor:pointer;">
                 <img id="previewImg" style="display:none; width:100%; height:100%; object-fit:contain;">
                 <span id="uploadHint">📸 上傳照片</span>
             </div>
@@ -146,61 +150,52 @@
         </div>
         <div class="input-item"><label>寶可夢名稱</label><input type="text" id="name"></div>
         <div class="input-item" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <div><label>序號</label><input type="text" id="sn"></div>
-            <div><label>買進價格</label><input type="number" id="buyPrice"></div>
+            <div><label>卡牌序號</label><input type="text" id="sn"></div>
+            <div><label>POP 張數</label><input type="number" id="popCount"></div>
         </div>
+        <div class="input-item"><label>認證序號</label><input type="text" id="certId"></div>
         <div class="input-item" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <div><label>行情時價</label><input type="number" id="currentPrice"></div>
+            <div><label>購入管道</label><input type="text" id="source"></div>
             <div><label>購買日期</label><input type="date" id="buyDate"></div>
         </div>
+        <div class="input-item" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div><label>買進價格</label><input type="number" id="buyPrice"></div>
+            <div><label>行情時價</label><input type="number" id="currentPrice"></div>
+        </div>
+        <div id="soldFields" style="background:#fff9e6; padding:10px; border-radius:10px; border:1px solid var(--pika-yellow); margin-bottom:12px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div><label>售出日期</label><input type="date" id="sellDate"></div>
+                <div><label>💰 售出價格</label><input type="number" id="sellPrice"></div>
+            </div>
+        </div>
         <div class="input-item"><label>狀態</label>
-            <select id="isSold" onchange="document.getElementById('soldInputSection').style.display = this.value=='true'?'block':'none'">
+            <select id="isSold">
                 <option value="false">📦 持倉中</option><option value="true">🤝 已賣出</option>
             </select>
         </div>
-        <div id="soldInputSection" style="display:none; background:#fff3cd; padding:10px; border-radius:10px; margin-bottom:15px;">
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <div><label>售出價格</label><input type="number" id="sellPrice"></div>
-                <div><label>售出日期</label><input type="date" id="sellDate"></div>
-            </div>
-        </div>
         <div class="input-item"><label>備註</label><textarea id="memo" rows="2"></textarea></div>
-        <button onclick="saveData()" style="width:100%; padding:15px; background:var(--pika-blue); color:white; border:none; border-radius:12px; font-weight:900; cursor:pointer;">確認儲存</button>
-        <button onclick="closeForm()" style="width:100%; padding:12px; background:#eee; border:none; border-radius:12px; margin-top:10px; cursor:pointer;">取消</button>
+        <button onclick="saveData()" style="width:100%; padding:15px; background:var(--pika-brown); color:white; border:none; border-radius:12px; font-weight:900;">確認儲存</button>
+        <button onclick="closeForm()" style="width:100%; padding:10px; background:#eee; border:none; border-radius:10px; margin-top:10px;">取消</button>
     </div>
 </div>
 
 <script>
-    // --- 密碼與登入模式修正 ---
+    // --- 登入邏輯 (修復 0000/1234) ---
     let currentPin = '';
     function pressKey(key) {
         if (key === 'back') currentPin = currentPin.slice(0, -1);
         else if (currentPin.length < 4) currentPin += key;
-        
-        for (let i = 0; i < 4; i++) {
-            document.getElementById(`dot-${i}`).className = i < currentPin.length ? 'dot filled' : 'dot';
-        }
-
+        for (let i = 0; i < 4; i++) document.getElementById(`dot-${i}`).className = i < currentPin.length ? 'dot filled' : 'dot';
         if (currentPin.length === 4) {
             setTimeout(() => {
-                if (currentPin === '0000') { 
-                    document.body.className = 'mobile-view'; 
-                    document.getElementById('loginScreen').style.display = 'none'; 
-                } 
-                else if (currentPin === '1234') { 
-                    document.body.className = 'desktop-view'; 
-                    document.getElementById('loginScreen').style.display = 'none'; 
-                } 
-                else { 
-                    Swal.fire("錯誤", "密碼不正確！", "error"); 
-                    currentPin = ''; 
-                    for (let i = 0; i < 4; i++) document.getElementById(`dot-${i}`).className = 'dot';
-                }
+                if (currentPin === '0000') { document.body.className = 'mobile-view'; document.getElementById('loginScreen').style.display = 'none'; }
+                else if (currentPin === '1234') { document.body.className = 'desktop-view'; document.getElementById('loginScreen').style.display = 'none'; }
+                else { Swal.fire("錯誤", "密碼不正確！", "error"); currentPin = ''; for (let i = 0; i < 4; i++) document.getElementById(`dot-${i}`).className = 'dot'; }
             }, 150);
         }
     }
 
-    // Firebase 配置 (沿用原本)
+    // --- Firebase 配置 ---
     const firebaseConfig = {
       apiKey: "AIzaSyCa_vS9uZ1niPmXQjlmWT1q6h16S_btALU",
       authDomain: "ptcg-1645a.firebaseapp.com",
@@ -215,13 +210,13 @@
     
     let allCards = [];
     let currentFilter = 'all';
+    let currentCardId = null;
 
-    // --- 批量行情優化：同名同序號合併 ---
+    // --- 核心：批量行情優化 (同名同序號合併) ---
     async function openBulkUpdate() {
         const activeCards = allCards.filter(c => !c.isSold);
         if (activeCards.length === 0) return Swal.fire("無持倉", "", "info");
 
-        // 分組
         const groups = {};
         activeCards.forEach(c => {
             const key = `${c.name}_${c.sn}`;
@@ -237,11 +232,11 @@
         `).join('');
 
         const { value: res } = await Swal.fire({
-            title: '批量更新時價',
+            title: '批量同步時價',
             html: `<div style="max-height:350px; overflow-y:auto; padding:10px;">${html}</div>`,
             showCancelButton: true,
             confirmButtonText: '全部更新',
-            preConfirm: () => Array.from(document.querySelectorAll('.bulk-input')).map(i => ({ ids: i.dataset.ids.split(','), price: parseFloat(i.value) }))
+            preConfirm: () => Array.from(document.querySelectorAll('.bulk-input')).map(i => ({ ids: i.dataset.ids.split(','), price: parseFloat(i.value) || 0 }))
         });
 
         if (res) {
@@ -253,7 +248,7 @@
                     const card = allCards.find(c => c.id === id);
                     let history = card.history || [];
                     history.push({ date: today, price: group.price });
-                    batch.update(db.collection("cards").doc(id), { currentPrice: group.price, history: history });
+                    batch.update(db.collection("cards").doc(id), { currentPrice: group.price, history: history, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
                 });
             });
             await batch.commit();
@@ -261,7 +256,50 @@
         }
     }
 
-    // --- 渲染與排序 ---
+    // --- 核心：數據計算 (找回所有消失的欄位) ---
+    function calculateFinancials() {
+        let activeGain = 0, soldGain = 0;
+        let activeCount = 0, activeInvest = 0, activeMarketValue = 0;
+        let soldCount = 0, soldTotalRevenue = 0;
+
+        allCards.forEach(c => {
+            const buy = c.buyPrice || 0;
+            if (c.isSold) {
+                soldCount++;
+                const sell = c.sellPrice || 0;
+                soldTotalRevenue += sell;
+                soldGain += (sell - buy);
+            } else {
+                activeCount++;
+                activeInvest += buy;
+                const current = c.currentPrice || 0;
+                activeMarketValue += current;
+                activeGain += (current - buy);
+            }
+        });
+
+        const fmt = v => '$' + v.toLocaleString();
+        const setUI = (id, val, isMoney = true) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.innerText = isMoney ? fmt(val) : val;
+            if (id.includes('gain') || id === 'stat-total') {
+                el.innerText = (val >= 0 ? '+' : '') + val.toLocaleString();
+                el.className = 'stat-value ' + (val >= 0 ? 'up' : 'down');
+            }
+        };
+
+        setUI('stat-active-count', activeCount, false);
+        setUI('stat-active-invest', activeInvest);
+        setUI('stat-active-market', activeMarketValue);
+        setUI('stat-active-gain', activeGain);
+        setUI('stat-sold-count', soldCount, false);
+        setUI('stat-sold-revenue', soldTotalRevenue);
+        setUI('stat-sold-gain', soldGain);
+        setUI('stat-total', activeGain + soldGain);
+    }
+
+    // --- 核心：渲染與排序 ---
     function renderGrid() {
         const search = document.getElementById('searchInput').value.toLowerCase();
         const sortBy = document.getElementById('sortSelect').value;
@@ -273,7 +311,6 @@
             return matchSearch && matchFilter;
         });
 
-        // 排序邏輯
         filtered.sort((a, b) => {
             if (sortBy === 'buyPriceDesc') return (b.buyPrice || 0) - (a.buyPrice || 0);
             if (sortBy === 'buyPriceAsc') return (a.buyPrice || 0) - (b.buyPrice || 0);
@@ -284,7 +321,8 @@
 
         grid.innerHTML = filtered.map(c => {
             const buy = c.buyPrice || 0;
-            const diff = c.isSold ? ((c.sellPrice || 0) - buy) : (c.currentPrice - buy);
+            const current = c.isSold ? (c.sellPrice || 0) : (c.currentPrice || 0);
+            const diff = current - buy;
             const percent = buy ? ((diff/buy)*100).toFixed(1) : 0;
             return `
                 <div class="grid-item" onclick="showDetail('${c.id}')">
@@ -293,48 +331,50 @@
                     <div class="grid-img-box"><img src="${c.imageUrl || 'https://via.placeholder.com/150'}"></div>
                     <div style="font-weight:900; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${c.name}</div>
                     <div style="font-size:11px; color:#888;">成本: $${buy.toLocaleString()}</div>
-                    <div class="${diff>=0?'up-text':'down-text'}">$${(c.isSold ? (c.sellPrice || 0) : c.currentPrice).toLocaleString()} (${diff>=0?'+':''}${percent}%)</div>
+                    <div class="${diff>=0?'up-text':'down-text'}">$${current.toLocaleString()} (${diff>=0?'+':''}${percent}%)</div>
                 </div>
             `;
         }).join('');
     }
 
-    // 資料監聽與財務計算 (沿用並微調樣式)
+    // --- 其他功能 (細節、存檔、過濾) ---
+    function setFilter(type) {
+        currentFilter = type;
+        document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+        document.getElementById(`filter-${type}`).classList.add('active');
+        renderGrid();
+    }
+
     db.collection("cards").orderBy("updatedAt", "desc").onSnapshot(snap => {
         allCards = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         calculateFinancials();
         renderGrid();
     });
 
-    function calculateFinancials() {
-        let activeGain = 0, soldGain = 0, activeMarket = 0;
-        allCards.forEach(c => {
-            if (c.isSold) soldGain += ((c.sellPrice || 0) - (c.buyPrice || 0));
-            else {
-                activeMarket += (c.currentPrice || 0);
-                activeGain += ((c.currentPrice || 0) - (c.buyPrice || 0));
-            }
-        });
-        document.getElementById('stat-active-market').innerText = '$' + activeMarket.toLocaleString();
-        const gainEl = document.getElementById('stat-active-gain');
-        gainEl.innerText = (activeGain >= 0 ? '+' : '') + activeGain.toLocaleString();
-        gainEl.className = 'stat-value ' + (activeGain >= 0 ? 'up-text' : 'down-text');
+    function openForm(editData = null, isCopy = false) {
+        currentCardId = (editData && !isCopy) ? editData.id : null;
+        document.getElementById('formModal').style.display = 'flex';
+        document.getElementById('formTitle').innerText = currentCardId ? "✏️ 修改資訊" : "➕ 錄入卡牌";
         
-        const total = activeGain + soldGain;
-        const totalEl = document.getElementById('stat-total');
-        totalEl.innerText = (total >= 0 ? '+' : '') + total.toLocaleString();
+        document.getElementById('name').value = editData ? editData.name : "";
+        document.getElementById('sn').value = editData ? editData.sn : "";
+        document.getElementById('popCount').value = editData ? editData.popCount : "";
+        document.getElementById('certId').value = editData ? (isCopy ? "" : editData.certId) : "";
+        document.getElementById('source').value = editData ? editData.source : "";
+        document.getElementById('buyDate').value = editData ? editData.buyDate : "";
+        document.getElementById('buyPrice').value = editData ? editData.buyPrice : "";
+        document.getElementById('currentPrice').value = editData ? editData.currentPrice : "";
+        document.getElementById('sellDate').value = (editData && !isCopy) ? (editData.sellDate || "") : "";
+        document.getElementById('sellPrice').value = (editData && !isCopy) ? (editData.sellPrice || "") : "";
+        document.getElementById('isSold').value = (editData && !isCopy) ? String(editData.isSold) : "false";
+        document.getElementById('memo').value = editData ? editData.memo : "";
+        
+        const preview = document.getElementById('previewImg');
+        const hint = document.getElementById('uploadHint');
+        if (editData && editData.imageUrl) { preview.src = editData.imageUrl; preview.style.display = 'block'; hint.style.display = 'none'; }
+        else { preview.style.display = 'none'; hint.style.display = 'block'; }
     }
 
-    function setFilter(type) {
-        currentFilter = type;
-        document.querySelectorAll('.filter-tab').forEach(btn => {
-            btn.style.background = btn.id === `filter-${type}` ? 'var(--pika-dark)' : 'white';
-            btn.style.color = btn.id === `filter-${type}` ? 'var(--pika-yellow)' : 'var(--pika-dark)';
-        });
-        renderGrid();
-    }
-
-    // 關閉與預覽功能
     function closeForm() { document.getElementById('formModal').style.display = 'none'; }
     function previewFile(input) {
         const file = input.files[0];
@@ -344,8 +384,92 @@
             document.getElementById('uploadHint').style.display = 'none';
         }
     }
-    
-    // ... 其餘原本的 saveData, showDetail, deleteCard 函式皆與 3.2 版完全一致，確保資料傳輸無誤
+
+    async function saveData() {
+        const name = document.getElementById('name').value;
+        const file = document.getElementById('fileInput').files[0];
+        if (!name) return Swal.fire("提醒", "名稱必填", "warning");
+
+        Swal.fire({ title: '儲存中...', didOpen: () => Swal.showLoading() });
+        try {
+            let imageUrl = currentCardId ? (allCards.find(c => c.id === currentCardId).imageUrl || "") : "";
+            if (file) {
+                const imgRef = storage.ref(`cards/${Date.now()}`);
+                await imgRef.put(file);
+                imageUrl = await imgRef.getDownloadURL();
+            }
+            const currentPrice = parseFloat(document.getElementById('currentPrice').value) || 0;
+            const today = new Date().toLocaleDateString();
+            const data = {
+                name, imageUrl,
+                sn: document.getElementById('sn').value,
+                popCount: parseInt(document.getElementById('popCount').value) || 0,
+                certId: document.getElementById('certId').value,
+                source: document.getElementById('source').value,
+                buyDate: document.getElementById('buyDate').value,
+                buyPrice: parseFloat(document.getElementById('buyPrice').value) || 0,
+                currentPrice: currentPrice,
+                sellDate: document.getElementById('sellDate').value,
+                sellPrice: parseFloat(document.getElementById('sellPrice').value) || 0,
+                isSold: document.getElementById('isSold').value === 'true',
+                memo: document.getElementById('memo').value,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            if (currentCardId) {
+                let history = allCards.find(c => c.id === currentCardId).history || [];
+                history.push({ date: today, price: currentPrice });
+                data.history = history;
+                await db.collection("cards").doc(currentCardId).update(data);
+            } else {
+                data.history = [{ date: today, price: currentPrice }];
+                await db.collection("cards").add(data);
+            }
+            Swal.fire("成功", "已儲存", "success");
+            closeForm();
+            document.getElementById('detailModal').style.display = 'none';
+        } catch (e) { Swal.fire("錯誤", e.message, "error"); }
+    }
+
+    function showDetail(id) {
+        const card = allCards.find(c => c.id === id);
+        if (!card) return;
+        const buy = card.buyPrice || 0;
+        const current = card.isSold ? (card.sellPrice || 0) : (card.currentPrice || 0);
+        const diff = current - buy;
+        const percent = buy ? ((diff/buy)*100).toFixed(1) : 0;
+
+        document.getElementById('detailContent').innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <b style="font-size:18px;">${card.name}</b>
+                <button onclick="document.getElementById('detailModal').style.display='none'" style="border:none; background:none; font-size:24px;">×</button>
+            </div>
+            <img src="${card.imageUrl || 'https://via.placeholder.com/300'}" style="width:100%; border-radius:12px; margin-bottom:15px; border:2px solid #ccc;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:14px;">
+                <div><small>序號:</small><br><b>#${card.sn}</b></div>
+                <div><small>POP:</small><br><b>${card.popCount || 0}</b></div>
+                <div style="grid-column:span 2;"><small>認證編號:</small><br><b>${card.certId || '-'}</b></div>
+                <div><small>買進:</small><br><b>$${buy.toLocaleString()}</b></div>
+                <div><small>${card.isSold?'售出':'時價'}:</small><br><b class="${diff>=0?'up-text':'down-text'}">$${current.toLocaleString()}</b></div>
+                <div style="grid-column:span 2; background:#f0f0f0; padding:8px; border-radius:8px;">
+                    <small>累積損益:</small><br><b class="${diff>=0?'up-text':'down-text'}">$${diff.toLocaleString()} (${percent}%)</b>
+                </div>
+            </div>
+            <p style="font-size:12px; color:#666; margin-top:10px;">備註: ${card.memo || '無'}</p>
+            <div style="display:flex; gap:5px; margin-top:15px;">
+                <button onclick="openForm(allCards.find(c=>c.id=='${id}'), true)" style="flex:1; padding:10px; border-radius:8px; background:var(--pika-yellow); border:none; font-weight:bold;">複製</button>
+                <button onclick="openForm(allCards.find(c=>c.id=='${id}'))" style="flex:1; padding:10px; border-radius:8px; background:var(--pika-dark); color:white; border:none; font-weight:bold;">修改</button>
+                <button onclick="deleteCard('${id}')" style="flex:1; padding:10px; border-radius:8px; background:#d9534f; color:white; border:none; font-weight:bold;">刪除</button>
+            </div>
+        `;
+        document.getElementById('detailModal').style.display = 'flex';
+    }
+
+    async function deleteCard(id) {
+        if ((await Swal.fire({ title: '確定刪除?', showCancelButton: true })).isConfirmed) {
+            await db.collection("cards").doc(id).delete();
+            document.getElementById('detailModal').style.display = 'none';
+        }
+    }
 </script>
 </body>
 </html>
